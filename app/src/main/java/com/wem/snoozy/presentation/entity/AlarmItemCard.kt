@@ -11,8 +11,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,20 +32,31 @@ import com.wem.snoozy.ui.theme.SnoozyTheme
 
 val myTypeFamily = FontFamily(
     Font(R.font.public_sans_regular, FontWeight(400)),
+    Font(R.font.public_sans_semi_bold, FontWeight(600)),
     Font(R.font.public_sans_black, FontWeight(1000))
 )
 
 @Composable
 fun AlarmItemCard(
     modifier: Modifier = Modifier,
-    alarmItem: AlarmItem
+    alarmItem: AlarmItem,
+    onToggle: (Int) -> Unit = {}
 ) {
+
+    var checked by remember { mutableStateOf(false) }
+
+    val cardColor =
+        if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+    val textCardColor =
+        if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
+    val timeTextColor = if (checked) MaterialTheme.colorScheme.tertiary else Color.White
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = cardColor
         ),
         shape = CircleShape.copy(CornerSize(20))
     ) {
@@ -56,13 +72,13 @@ fun AlarmItemCard(
                     text = alarmItem.dayOfWeek,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = textCardColor
                 )
                 Text(
                     text = "Time to bed: " + alarmItem.timeToBed,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = textCardColor
                 )
             }
             Row(
@@ -74,12 +90,28 @@ fun AlarmItemCard(
                     text = alarmItem.hours,
                     fontSize = 60.sp,
                     fontFamily = myTypeFamily,
-                    fontWeight = FontWeight(900),
-                    color = Color.Black
+                    fontWeight = if (checked) FontWeight(900) else FontWeight(600),
+                    color = timeTextColor
                 )
                 Switch(
-                    checked = false,
-                    {}
+                    checked = checked,
+                    onCheckedChange = {
+                        onToggle(alarmItem.id)
+                        checked = it
+                    },
+                    enabled = true,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        uncheckedThumbColor = Color(0xff79747E),
+                        checkedTrackColor = Color(0xffAAFFBD),
+                        uncheckedTrackColor = Color(0xffE6E0E9),
+                        checkedBorderColor = Color.Transparent,
+                        uncheckedBorderColor = Color(0xff79747E),
+                        disabledCheckedTrackColor = Color.Gray,
+                        disabledUncheckedTrackColor = Color.LightGray,
+                        disabledCheckedThumbColor = Color.DarkGray,
+                        disabledUncheckedThumbColor = Color.Gray
+                    )
                 )
             }
         }
@@ -90,6 +122,6 @@ fun AlarmItemCard(
 @Composable
 fun AlarmItemCardPreview() {
     SnoozyTheme {
-        AlarmItemCard(alarmItem =  AlarmItem(0, "Monday", "7:00", "22:00"))
+        AlarmItemCard(alarmItem = AlarmItem(0, "Monday", "7:00", "22:00", checked = false))
     }
 }

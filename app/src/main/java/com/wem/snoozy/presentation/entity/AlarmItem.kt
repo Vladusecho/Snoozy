@@ -5,4 +5,5 @@ data class AlarmItem(
     val dayOfWeek: String,
     val hours: String,
     val timeToBed: String,
+    val checked: Boolean
 )

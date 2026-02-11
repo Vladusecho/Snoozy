@@ -11,3 +11,13 @@ val AntiqueWhite = Color(0xffEFE9E3)
 val GraphiteGray = Color(0xff4E4D4F)
 
 val MediumGray = Color(0xffB8B8B9)
+
+val WetAsphalt = Color(0xff37353E)
+
+val DarkBlue = Color(0xff222831)
+
+val DarkGray = Color(0xff41414B)
+
+val SilverGray = Color(0xffA7A9AD)
+
+val SilverMist = Color(0xffB3B3B7)
