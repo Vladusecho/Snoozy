@@ -40,10 +40,10 @@ val myTypeFamily = FontFamily(
 fun AlarmItemCard(
     modifier: Modifier = Modifier,
     alarmItem: AlarmItem,
-    onToggle: (Int) -> Unit = {}
+    onToggle: () -> Unit = {}
 ) {
 
-    var checked by remember { mutableStateOf(false) }
+    val checked = alarmItem.checked
 
     val cardColor =
         if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
@@ -96,8 +96,7 @@ fun AlarmItemCard(
                 Switch(
                     checked = checked,
                     onCheckedChange = {
-                        onToggle(alarmItem.id)
-                        checked = it
+                        onToggle()
                     },
                     enabled = true,
                     colors = SwitchDefaults.colors(

@@ -20,12 +20,7 @@ class MainViewModel : ViewModel() {
 
     fun toggleAlarm(id: Int) {
         val currentList = alarms.value.toMutableList()
-        val index = currentList.indexOfFirst { it.id == id }
-        if (index != -1) {
-            currentList[index] = currentList[index].copy(
-                checked = !currentList[index].checked
-            )
-            alarms.value = currentList
-        }
+        currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it}
+        alarms.value = currentList
     }
 }

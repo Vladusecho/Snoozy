@@ -49,7 +49,6 @@ fun MainScreen(
     val alarms = viewModel.alarms.collectAsState()
 
     Scaffold { paddingValues ->
-        val alarms = viewModel.alarms
         Box(
             modifier = Modifier
                 .padding(paddingValues)
