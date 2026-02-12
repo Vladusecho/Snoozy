@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -14,13 +15,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +53,30 @@ fun AlarmItemCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .then(
+                if (checked) {
+                    Modifier
+                        .shadow(
+                            elevation = 1.dp,
+                            shape = RoundedCornerShape(20),
+                            clip = true,
+                            Color.Black,
+                            Color.Black
+                        )
+                        .graphicsLayer {
+                            this.shadowElevation = 0.5.dp.toPx()
+                            this.shape = RoundedCornerShape(20)
+                            this.translationX = 2.5.dp.toPx()  // Сдвиг влево
+                            this.translationY = 2.5.dp.toPx()  // Сдвиг вверх
+                            this.clip = true
+                            this.ambientShadowColor = Color.Black
+                            this.spotShadowColor = Color.Black
+                        }
+                } else {
+                    Modifier
+                }
+            ),
         colors = CardDefaults.cardColors().copy(
             containerColor = cardColor
         ),
@@ -100,16 +122,16 @@ fun AlarmItemCard(
                     },
                     enabled = true,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
+                        checkedThumbColor = Color(0xff8CD39C),
                         uncheckedThumbColor = Color(0xff79747E),
                         checkedTrackColor = Color(0xffAAFFBD),
                         uncheckedTrackColor = Color(0xffE6E0E9),
-                        checkedBorderColor = Color.Transparent,
+                        checkedBorderColor = Color(0xff8CD39C),
                         uncheckedBorderColor = Color(0xff79747E),
                         disabledCheckedTrackColor = Color.Gray,
                         disabledUncheckedTrackColor = Color.LightGray,
                         disabledCheckedThumbColor = Color.DarkGray,
-                        disabledUncheckedThumbColor = Color.Gray
+                        disabledUncheckedThumbColor = Color.Gray,
                     )
                 )
             }

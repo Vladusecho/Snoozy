@@ -4,11 +4,11 @@ import androidx.compose.ui.graphics.Color
 
 val Cyan = Color(0xFFDAC4F7)
 
-val TaupeGray = Color(0xff605D5B)
+val TaupeGray = Color(0xff4A4947)
 
-val AntiqueWhite = Color(0xffEFE9E3)
+val AntiqueWhite = Color(0xffDEE2E6)
 
-val GraphiteGray = Color(0xff807F86)
+val GraphiteGray = Color(0xffA8A8A7)
 
 val MediumGray = Color(0xffB8B8B9)
 
@@ -21,3 +21,5 @@ val DarkGray = Color(0xff41414B)
 val SilverGray = Color(0xffA7A9AD)
 
 val SilverMist = Color(0xffB3B3B7)
+
+val LightBlack = Color(0xff4A4947)
