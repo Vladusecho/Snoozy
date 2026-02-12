@@ -13,6 +13,7 @@ uiGraphics = "1.10.2"
 material3 = "1.4.0"
 
 [libraries]
+icons = { group = "androidx.compose.material", name = "material-icons-extended"}
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

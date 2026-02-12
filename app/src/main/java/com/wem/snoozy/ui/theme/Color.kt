@@ -23,3 +23,5 @@ val SilverGray = Color(0xffA7A9AD)
 val SilverMist = Color(0xffB3B3B7)
 
 val LightBlack = Color(0xff4A4947)
+
+val Lime = Color(0xffAAFFBD)

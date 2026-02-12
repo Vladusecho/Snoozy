@@ -25,7 +25,8 @@ private val LightColorScheme = lightColorScheme(
     secondary = GraphiteGray, // alarm off
     onPrimary = TaupeGray, // alarm text on
     onSecondary = AntiqueWhite, // alarm text off
-    tertiary = LightBlack // alarm time text
+    tertiary = LightBlack, // alarm time text
+    onBackground = Lime // apply button
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
