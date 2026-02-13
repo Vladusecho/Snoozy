@@ -48,31 +48,14 @@ fun AlarmItemCard(
         if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
     val textCardColor =
         if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
-    val timeTextColor = if (checked) MaterialTheme.colorScheme.tertiary else Color.White
-
+    val timeTextColor = if (checked) MaterialTheme.colorScheme.tertiary else Color.White.copy(alpha = .6f)
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .then(
                 if (checked) {
-                    Modifier
-                        .shadow(
-                            elevation = 1.dp,
-                            shape = RoundedCornerShape(20),
-                            clip = true,
-                            Color.Black,
-                            Color.Black
-                        )
-                        .graphicsLayer {
-                            this.shadowElevation = 0.5.dp.toPx()
-                            this.shape = RoundedCornerShape(20)
-                            this.translationX = 2.5.dp.toPx()  // Сдвиг влево
-                            this.translationY = 2.5.dp.toPx()  // Сдвиг вверх
-                            this.clip = true
-                            this.ambientShadowColor = Color.Black
-                            this.spotShadowColor = Color.Black
-                        }
+                    Modifier.shadow(5.dp, RoundedCornerShape(20))
                 } else {
                     Modifier
                 }
