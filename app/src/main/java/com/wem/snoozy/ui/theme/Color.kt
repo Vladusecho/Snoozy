@@ -8,7 +8,7 @@ val TaupeGray = Color(0xff4A4947)
 
 val AntiqueWhite = Color(0xffDEE2E6)
 
-val GraphiteGray = Color(0xffA8A8A7)
+val GraphiteGray = Color(0xffDEE2E6)
 
 val MediumGray = Color(0xffB8B8B9)
 

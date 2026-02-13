@@ -21,11 +21,11 @@ class MainViewModel : ViewModel() {
     ))
 
     val cycles = mutableListOf(
-        CycleItem(0, "22:00", "7"),
-        CycleItem(1, "20:30", "7"),
-        CycleItem(2, "19:00", "7"),
-        CycleItem(3, "17:30", "7"),
-        CycleItem(4, "16:00", "7")
+        CycleItem(0, "22:00", "7", false),
+        CycleItem(1, "20:30", "7", true),
+        CycleItem(2, "19:00", "7", false),
+        CycleItem(3, "17:30", "7", false),
+        CycleItem(4, "16:00", "7", false)
     )
 
     fun toggleAlarm(id: Int) {

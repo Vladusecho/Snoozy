@@ -45,10 +45,10 @@ fun AlarmItemCard(
     val checked = alarmItem.checked
 
     val cardColor =
-        if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-    val textCardColor =
-        if (checked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
-    val timeTextColor = if (checked) MaterialTheme.colorScheme.tertiary else Color.White.copy(alpha = .6f)
+        if (checked) MaterialTheme.colorScheme.primary else Color(0xffEFF1F3)
+    val cardType =
+        if (checked) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiary.copy(0.6f)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -77,13 +77,13 @@ fun AlarmItemCard(
                     text = alarmItem.dayOfWeek,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
-                    color = textCardColor
+                    color = cardType
                 )
                 Text(
                     text = "Time to bed: " + alarmItem.timeToBed,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
-                    color = textCardColor
+                    color = cardType
                 )
             }
             Row(
@@ -96,7 +96,7 @@ fun AlarmItemCard(
                     fontSize = 60.sp,
                     fontFamily = myTypeFamily,
                     fontWeight = if (checked) FontWeight(900) else FontWeight(600),
-                    color = timeTextColor
+                    color = cardType
                 )
                 Switch(
                     checked = checked,
@@ -122,7 +122,7 @@ fun AlarmItemCard(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun AlarmItemCardPreview() {
     SnoozyTheme {

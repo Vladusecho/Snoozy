@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -167,12 +168,13 @@ fun MainScreen(
                 }
                 if (showBottomSheet) {
                     ModalBottomSheet(
-                        onDismissRequest = { },
+                        onDismissRequest = { showBottomSheet = false },
                         sheetState = sheetState,
                         dragHandle = {
                             // Пустой handle или кастомный, который не реагирует на свайп
                             Box(modifier = Modifier.height(0.dp))
-                        }
+                        },
+                        sheetGesturesEnabled = false
                     ) {
                         BottomSheetContent(
                             viewModel = viewModel
@@ -196,7 +198,7 @@ fun BottomSheetContent(
     val timePickerState = rememberTimePickerState()
 
     Column(
-        modifier = Modifier.padding(horizontal = 32.dp)
+        modifier = Modifier.padding(horizontal = 32.dp, vertical = 24.dp)
     ) {
         Row(
             modifier = Modifier
@@ -297,7 +299,7 @@ fun BottomSheetContent(
         ) {
             Column {
                 Text(
-                    "Upcoming alarm",
+                    "Alarm rings",
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
                     fontWeight = FontWeight(200),
@@ -367,20 +369,6 @@ fun BottomSheetContent(
 fun CycleTable(
     cyclesList: List<CycleItem>
 ) {
-
-//    val nestedScrollConnection = remember {
-//        object : NestedScrollConnection {
-//            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-//                // Блокируем вертикальный скролл для BottomSheet
-//                return if (source == NestedScrollSource.UserInput) {
-//                    Offset(0f, 0f) // Не передаем скролл дальше
-//                } else {
-//                    Offset.Zero
-//                }
-//            }
-//        }
-//    }
-
     Box(
         modifier = Modifier
             .padding(vertical = 16.dp)
@@ -390,7 +378,8 @@ fun CycleTable(
             .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10))
     ) {
         LazyColumn(
-            modifier = Modifier
+            modifier = Modifier,
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(
                 cyclesList
