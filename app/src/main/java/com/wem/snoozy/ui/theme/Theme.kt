@@ -20,7 +20,10 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = White,
     onBackground = Lime,
     onTertiary = CoralRed,
-    onTertiaryContainer = White
+    onTertiaryContainer = White,
+    surface = AnthraciteGray,
+    onSurface = StoneGray,
+    onSurfaceVariant = CoralRed
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -31,7 +34,11 @@ private val LightColorScheme = lightColorScheme(
     tertiary = LightBlack, // alarm time text
     onBackground = Lime, // apply button
     onTertiary = White, // add button
-    onTertiaryContainer = LightBlack // add button plus
+    onTertiaryContainer = LightBlack, // add button plus
+    surface = White, // bottom sheet background
+    onSurface = GraphiteGray, // element's background in bottom sheet
+    onSurfaceVariant = Lime, // checked cycle
+
 
 
     /* Other default colors to override

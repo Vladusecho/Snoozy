@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +32,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,8 +42,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -62,13 +69,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wem.snoozy.R
 import com.wem.snoozy.presentation.entity.AlarmItemCard
 import com.wem.snoozy.presentation.entity.CycleItemCard
 import com.wem.snoozy.presentation.entity.myTypeFamily
 import com.wem.snoozy.presentation.viewModel.MainViewModel
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 val myTypeFamily = FontFamily(
     Font(R.font.public_sans_regular, FontWeight(400)),
@@ -158,7 +169,8 @@ fun MainScreen(
                         dragHandle = {
                             Box(modifier = Modifier.height(0.dp))
                         },
-                        sheetGesturesEnabled = false
+                        sheetGesturesEnabled = false,
+                        containerColor = MaterialTheme.colorScheme.surface
                     ) {
                         BottomSheetContent(
                             viewModel = viewModel
@@ -187,7 +199,10 @@ fun TimePickerDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 24.dp),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -196,7 +211,12 @@ fun TimePickerDialog(
                 TimePicker(
                     state = timePickerState,
                     colors = TimePickerDefaults.colors().copy(
-                        selectorColor = MaterialTheme.colorScheme.primary
+                        selectorColor = MaterialTheme.colorScheme.primary,
+                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.tertiary,
+                        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.surface,
+                        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
+                        clockDialColor = MaterialTheme.colorScheme.surface,
+                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.tertiary
                     )
                 )
 
@@ -236,6 +256,76 @@ fun TimePickerDialog(
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun DatePickerDialog(
+    initialDate: LocalDate,
+    onDismiss: () -> Unit,
+    onConfirm: (LocalDate) -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDate.toEpochDay() * 24 * 60 * 60 * 1000
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = LocalDate.ofEpochDay(millis / (24 * 60 * 60 * 1000))
+                        onConfirm(date)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.onBackground
+                ),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    "Apply",
+                    fontSize = 20.sp,
+                    fontFamily = myTypeFamily,
+                    fontWeight = FontWeight(900),
+                    color = Color.Black
+                )
+            }
+        },
+        colors = DatePickerDefaults.colors().copy(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        DatePicker(
+            showModeToggle = false,
+            state = datePickerState,
+            colors = DatePickerDefaults.colors().copy(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.tertiary,
+                headlineContentColor = MaterialTheme.colorScheme.tertiary,
+                weekdayContentColor = MaterialTheme.colorScheme.tertiary,
+                navigationContentColor = MaterialTheme.colorScheme.tertiary,
+                yearContentColor = MaterialTheme.colorScheme.tertiary,
+                dayContentColor = MaterialTheme.colorScheme.tertiary,
+                todayContentColor = MaterialTheme.colorScheme.tertiary
+            )
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatDateWithRelative(date: LocalDate): String {
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy").withLocale(Locale.ENGLISH)
+
+    return when (date) {
+        today -> "Today"
+        today.plusDays(1) -> "Tomorrow"
+        today.plusDays(2) -> "Next day"
+        else -> date.format(formatter)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun BottomSheetContent(
     viewModel: MainViewModel,
     onCancelClick: () -> Unit
@@ -243,6 +333,11 @@ fun BottomSheetContent(
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedTime by remember { mutableStateOf(LocalTime.now()) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    val daysState = viewModel.days.collectAsState()
 
 
     if (showDialog) {
@@ -255,10 +350,22 @@ fun BottomSheetContent(
         )
     }
 
+    if (showDatePicker) {
+        DatePickerDialog(
+            initialDate = selectedDate,
+            onDismiss = { showDatePicker = false },
+            onConfirm = { date ->
+                selectedDate = date
+                showDatePicker = false
+            }
+        )
+    }
+
     viewModel.applyCyclesList(selectedTime)
 
     Column(
-        modifier = Modifier.padding(horizontal = 32.dp, vertical = 24.dp)
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
@@ -275,7 +382,7 @@ fun BottomSheetContent(
             Card(
                 modifier = Modifier.size(90.dp),
                 colors = CardDefaults.cardColors().copy(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = CircleShape.copy(CornerSize(20))
             ) {
@@ -303,7 +410,7 @@ fun BottomSheetContent(
             Card(
                 modifier = Modifier.size(90.dp),
                 colors = CardDefaults.cardColors().copy(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = CircleShape.copy(CornerSize(20))
             ) {
@@ -324,22 +431,30 @@ fun BottomSheetContent(
         CycleTable(
             viewModel = viewModel
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            repeat(7) {
+            items(
+                daysState.value
+            ) {
                 Box(
                     Modifier
                         .size(40.dp)
+                        .then(
+                            if (it.checked) Modifier
+                                .shadow(2.dp, RoundedCornerShape(20)) else Modifier
+                        )
                         .clip(RoundedCornerShape(20))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(3.dp),
+                        .background(if (it.checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+                        .padding(3.dp)
+                        .clickable {
+                            viewModel.toggleDay(it.id)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "S",
+                        it.name,
                         fontSize = 25.sp,
                         fontFamily = myTypeFamily,
                         fontWeight = FontWeight(900),
@@ -363,14 +478,18 @@ fun BottomSheetContent(
                     color = MaterialTheme.colorScheme.tertiary
                 )
                 Text(
-                    "Tomorrow",
+                    formatDateWithRelative(selectedDate),
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
                     fontWeight = FontWeight(900),
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
-            Button({}) {
+            Button(
+                {
+                    showDatePicker = true
+                },
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -443,7 +562,7 @@ fun CycleTable(
             .padding(vertical = 16.dp)
             .size(340.dp, 240.dp)
             .clip(RoundedCornerShape(10))
-            .background(MaterialTheme.colorScheme.primary)
+            .background(MaterialTheme.colorScheme.onSurface)
             .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10))
     ) {
         LazyColumn(
@@ -452,9 +571,15 @@ fun CycleTable(
             state = listState
         ) {
             items(
-                cyclesListState.value
+                cyclesListState.value,
+                key = { it.id.toString() + it.time }
             ) {
-                CycleItemCard(it) { viewModel.toggleCycle(it.id) }
+                Box(
+                    modifier = Modifier.animateItem()
+                ) {
+                    CycleItemCard(it) { viewModel.toggleCycle(it.id) }
+                }
+
             }
         }
     }

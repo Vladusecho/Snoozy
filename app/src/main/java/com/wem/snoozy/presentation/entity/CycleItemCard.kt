@@ -32,7 +32,7 @@ fun CycleItemCard(
     onCycleClick: () -> Unit
 ) {
 
-    val cardColor = if (cycleItem.checked) Color(0xffAAFFBD) else Color.White
+    val cardColor = if (cycleItem.checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.surface
     val icon = if (cycleItem.checked) Icons.Default.Notifications else Icons.Default.NotificationsNone
 
     Card(
@@ -51,7 +51,8 @@ fun CycleItemCard(
         ) {
             Icon(
                 icon,
-                ""
+                "",
+                tint = MaterialTheme.colorScheme.tertiary
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -63,7 +64,11 @@ fun CycleItemCard(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                cycleItem.cycleCount + " cycles"
+                cycleItem.cycleCount + " cycles",
+                fontSize = 15.sp,
+                fontFamily = myTypeFamily,
+                fontWeight = FontWeight(400),
+                color = MaterialTheme.colorScheme.tertiary,
             )
         }
     }

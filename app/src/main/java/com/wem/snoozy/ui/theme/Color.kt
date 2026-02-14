@@ -27,3 +27,7 @@ val CoralRed = Color(0xffEC625F)
 val DarkGray = Color(0xff4B4B4B)
 
 val White = Color(0xffffffff)
+
+val AnthraciteGray = Color(0xff313131)
+
+val StoneGray = Color(0xff525252)

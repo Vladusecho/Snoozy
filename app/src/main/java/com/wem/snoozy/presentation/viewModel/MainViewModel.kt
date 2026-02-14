@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.wem.snoozy.presentation.entity.AlarmItem
 import com.wem.snoozy.presentation.entity.CycleItem
+import com.wem.snoozy.presentation.entity.DayItem
+import com.wem.snoozy.presentation.entity.DaysName
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -27,8 +29,24 @@ class MainViewModel : ViewModel() {
 
     val cycles = MutableStateFlow(mutableListOf<CycleItem>())
 
+    val days = MutableStateFlow(listOf(
+        DayItem(0, DaysName.SUNDAY.getDisplayName(), false),
+        DayItem(1, DaysName.MONDAY.getDisplayName(), false),
+        DayItem(2, DaysName.TUESDAY.getDisplayName(), false),
+        DayItem(3, DaysName.WEDNESDAY.getDisplayName(), false),
+        DayItem(4, DaysName.THURSDAY.getDisplayName(), false),
+        DayItem(5, DaysName.FRIDAY.getDisplayName(), false),
+        DayItem(6, DaysName.SATURDAY.getDisplayName(), false),
+    ))
+
     @RequiresApi(Build.VERSION_CODES.O)
     val savedTime = MutableStateFlow<LocalTime>(LocalTime.now())
+
+    fun toggleDay(id: Int) {
+        val currentList = days.value.toMutableList()
+        currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it}
+        days.value = currentList
+    }
 
     fun toggleAlarm(id: Int) {
         val currentList = alarms.value.toMutableList()
