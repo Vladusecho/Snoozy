@@ -2,6 +2,7 @@ package com.wem.snoozy.presentation.entity
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -26,18 +27,22 @@ import androidx.compose.ui.unit.sp
 import com.wem.snoozy.ui.theme.SnoozyTheme
 
 @Composable
-fun CycleItemCard(cycleItem: CycleItem) {
+fun CycleItemCard(
+    cycleItem: CycleItem,
+    onCycleClick: () -> Unit
+) {
 
     val cardColor = if (cycleItem.checked) Color(0xffAAFFBD) else Color.White
     val icon = if (cycleItem.checked) Icons.Default.Notifications else Icons.Default.NotificationsNone
 
     Card(
         modifier = Modifier
-            .padding(horizontal = 24.dp, vertical = 4.dp),
+            .padding(horizontal = 24.dp, vertical = 4.dp)
+            .clickable { onCycleClick() },
         colors = CardDefaults.cardColors().copy(
             containerColor = cardColor
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -69,6 +74,6 @@ fun CycleItemCard(cycleItem: CycleItem) {
 @Composable
 fun CyclesPreview() {
     SnoozyTheme {
-        CycleItemCard(CycleItem(0, "22:00", "7", false))
+        CycleItemCard(CycleItem(0, "22:00", "7", false)) {}
     }
 }

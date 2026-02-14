@@ -1,7 +1,11 @@
 package com.wem.snoozy.presentation.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,30 +17,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetDefaults
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -45,37 +47,28 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wem.snoozy.R
 import com.wem.snoozy.presentation.entity.AlarmItemCard
-import com.wem.snoozy.presentation.entity.CycleItem
 import com.wem.snoozy.presentation.entity.CycleItemCard
 import com.wem.snoozy.presentation.entity.myTypeFamily
 import com.wem.snoozy.presentation.viewModel.MainViewModel
-import com.wem.snoozy.ui.theme.SnoozyTheme
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.UserInput
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.wear.compose.material.rememberSwipeableState
+import java.time.LocalTime
 
 val myTypeFamily = FontFamily(
     Font(R.font.public_sans_regular, FontWeight(400)),
@@ -83,6 +76,7 @@ val myTypeFamily = FontFamily(
     Font(R.font.public_sans_black, FontWeight(1000))
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -117,7 +111,7 @@ fun MainScreen(
                 item {
                     Box(
                         modifier = Modifier
-                            .height(150.dp)
+                            .height(200.dp)
                             .background(Color.Transparent)
                     )
                 }
@@ -139,17 +133,8 @@ fun MainScreen(
                         .padding(bottom = 60.dp, top = 100.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    FloatingActionButton(
-                        { showBottomSheet = true },
-                        modifier = Modifier.size(80.dp),
-                        shape = RoundedCornerShape(50),
-                        elevation = FloatingActionButtonDefaults.elevation(2.dp)
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.add_alarm_button),
-                            "",
-                            tint = Color.Unspecified,
-                        )
+                    AddButton {
+                        showBottomSheet = true
                     }
                 }
                 Box(
@@ -171,7 +156,6 @@ fun MainScreen(
                         onDismissRequest = { showBottomSheet = false },
                         sheetState = sheetState,
                         dragHandle = {
-                            // Пустой handle или кастомный, который не реагирует на свайп
                             Box(modifier = Modifier.height(0.dp))
                         },
                         sheetGesturesEnabled = false
@@ -190,12 +174,88 @@ fun MainScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun TimePickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Int, Int) -> Unit
+) {
+    val timePickerState = rememberTimePickerState()
+
+    Dialog(
+        onDismissRequest = onDismiss
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(24.dp))
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors().copy(
+                        selectorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = {
+                            onConfirm(
+                                timePickerState.hour,
+                                timePickerState.minute
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors().copy(
+                            containerColor = MaterialTheme.colorScheme.onBackground
+                        )
+                    ) {
+                        Text(
+                            "Apply",
+                            fontSize = 20.sp,
+                            fontFamily = myTypeFamily,
+                            fontWeight = FontWeight(900),
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun BottomSheetContent(
     viewModel: MainViewModel,
     onCancelClick: () -> Unit
 ) {
 
-    val timePickerState = rememberTimePickerState()
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedTime by remember { mutableStateOf(LocalTime.now()) }
+
+
+    if (showDialog) {
+        TimePickerDialog(
+            onDismiss = { showDialog = false },
+            onConfirm = { hour, minute ->
+                selectedTime = LocalTime.of(hour, minute)
+                showDialog = false
+            }
+        )
+    }
+
+    viewModel.applyCyclesList(selectedTime)
 
     Column(
         modifier = Modifier.padding(horizontal = 32.dp, vertical = 24.dp)
@@ -203,7 +263,13 @@ fun BottomSheetContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    showDialog = true
+                },
             horizontalArrangement = Arrangement.Center
         ) {
             Card(
@@ -218,7 +284,7 @@ fun BottomSheetContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "0",
+                        selectedTime.hour.toString(),
                         fontSize = 60.sp,
                         fontFamily = myTypeFamily,
                         fontWeight = FontWeight(900),
@@ -245,27 +311,18 @@ fun BottomSheetContent(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row {
-                        Text(
-                            "0",
-                            fontSize = 60.sp,
-                            fontFamily = myTypeFamily,
-                            fontWeight = FontWeight(900),
-                            color = MaterialTheme.colorScheme.tertiary,
-                        )
-                        Text(
-                            "0",
-                            fontSize = 60.sp,
-                            fontFamily = myTypeFamily,
-                            fontWeight = FontWeight(900),
-                            color = MaterialTheme.colorScheme.tertiary,
-                        )
-                    }
+                    Text(
+                        selectedTime.minute.toString().padStart(2, '0'),
+                        fontSize = 60.sp,
+                        fontFamily = myTypeFamily,
+                        fontWeight = FontWeight(900),
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
                 }
             }
         }
         CycleTable(
-            viewModel.cycles
+            viewModel = viewModel
         )
         Row(
             modifier = Modifier
@@ -365,10 +422,22 @@ fun BottomSheetContent(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CycleTable(
-    cyclesList: List<CycleItem>
+    viewModel: MainViewModel
 ) {
+
+    val cyclesListState = viewModel.cycles.collectAsState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(cyclesListState.value) {
+        if (cyclesListState.value.firstOrNull()?.checked == true) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
+
     Box(
         modifier = Modifier
             .padding(vertical = 16.dp)
@@ -379,13 +448,37 @@ fun CycleTable(
     ) {
         LazyColumn(
             modifier = Modifier,
-            contentPadding = PaddingValues(vertical = 16.dp)
+            contentPadding = PaddingValues(vertical = 16.dp),
+            state = listState
         ) {
             items(
-                cyclesList
+                cyclesListState.value
             ) {
-                CycleItemCard(cycleItem = it)
+                CycleItemCard(it) { viewModel.toggleCycle(it.id) }
             }
         }
+    }
+}
+
+@Composable
+fun AddButton(
+    modifier: Modifier = Modifier,
+    onAddClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .size(85.dp)
+            .shadow(1.dp, RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.onTertiary)
+            .clickable { onAddClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.Add,
+            "",
+            modifier = Modifier.size(70.dp),
+            tint = MaterialTheme.colorScheme.onTertiaryContainer
+        )
     }
 }

@@ -13,20 +13,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = DarkBlue,
+    primary = CoralRed,
     secondary = DarkGray,
-    onPrimary = SilverGray,
+    onPrimary = White,
     onSecondary = SilverMist,
-    tertiary = Color.White
+    tertiary = White,
+    onBackground = Lime,
+    onTertiary = CoralRed,
+    onTertiaryContainer = White
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = AntiqueWhite, // alarm on
-    secondary = GraphiteGray, // alarm off
+    secondary = GraphiteGray.copy(0.4f), // alarm off
     onPrimary = TaupeGray, // alarm text on
     onSecondary = AntiqueWhite, // alarm text off
     tertiary = LightBlack, // alarm time text
-    onBackground = Lime // apply button
+    onBackground = Lime, // apply button
+    onTertiary = White, // add button
+    onTertiaryContainer = LightBlack // add button plus
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

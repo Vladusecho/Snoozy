@@ -17,8 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -45,7 +49,7 @@ fun AlarmItemCard(
     val checked = alarmItem.checked
 
     val cardColor =
-        if (checked) MaterialTheme.colorScheme.primary else Color(0xffEFF1F3)
+        if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
     val cardType =
         if (checked) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiary.copy(0.6f)
 
@@ -125,7 +129,7 @@ fun AlarmItemCard(
 @Preview(showBackground = true)
 @Composable
 fun AlarmItemCardPreview() {
-    SnoozyTheme {
+    SnoozyTheme(darkTheme = false) {
         AlarmItemCard(alarmItem = AlarmItem(0, "Monday", "7:00", "22:00", checked = false))
     }
 }
