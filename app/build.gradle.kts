@@ -41,6 +41,7 @@ android {
 
 dependencies {
 
+    implementation(libs.compose.navigation)
     implementation(libs.icons)
     implementation(libs.viewmodels)
     implementation(libs.androidx.core.ktx)

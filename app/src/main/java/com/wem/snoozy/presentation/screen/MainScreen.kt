@@ -3,7 +3,6 @@ package com.wem.snoozy.presentation.screen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -53,13 +52,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wem.snoozy.R
+import com.wem.snoozy.domain.navigation.AppNavGraph
+import com.wem.snoozy.domain.navigation.Screen
+import com.wem.snoozy.domain.navigation.rememberNavState
 import com.wem.snoozy.presentation.entity.AlarmItemCard
 import com.wem.snoozy.presentation.entity.CycleItemCard
 import com.wem.snoozy.presentation.entity.myTypeFamily
@@ -78,95 +78,122 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel()
 ) {
 
+    val navState = rememberNavState()
+
+    Scaffold { paddingValues ->
+        AppNavGraph(
+            navState.navHostController,
+            settingsScreenContent = {
+                SettingsScreen(navState.navHostController)
+            },
+            homeScreenContent = {
+                MainScreenContent(paddingValues, viewModel) {
+                    navState.navigateTo(Screen.Settings.route)
+                }
+            }
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenContent(
+    paddingValues: PaddingValues,
+    viewModel: MainViewModel,
+    onSettingsClick: () -> Unit
+) {
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
     var showBottomSheet by remember { mutableStateOf(false) }
     val alarms = viewModel.alarms.collectAsState()
 
-    Scaffold { paddingValues ->
-        Box(
-            modifier = Modifier
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
-                .padding(top = 16.dp)
-        ) {
-            LazyColumn {
-                items(
-                    alarms.value,
-                    key = { it.id }
-                ) { alarm ->
-                    AlarmItemCard(
-                        alarmItem = alarm
-                    ) {
-                        viewModel.toggleAlarm(alarm.id)
-                    }
+    Box(
+        modifier = Modifier
+            .padding(paddingValues)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 16.dp)
+    ) {
+        LazyColumn {
+            items(
+                alarms.value,
+                key = { it.id }
+            ) { alarm ->
+                AlarmItemCard(
+                    alarmItem = alarm
+                ) {
+                    viewModel.toggleAlarm(alarm.id)
                 }
-                item {
-                    Box(
-                        modifier = Modifier
-                            .height(200.dp)
-                            .background(Color.Transparent)
+            }
+            item {
+                Box(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .background(Color.Transparent)
+                )
+            }
+        }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            0.0f to MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                            0.3f to MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                            1f to MaterialTheme.colorScheme.background.copy(alpha = 1f),
+                        )
                     )
+                    .padding(bottom = 60.dp, top = 100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                AddButton {
+                    showBottomSheet = true
                 }
             }
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.BottomEnd
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                0.0f to MaterialTheme.colorScheme.background.copy(alpha = 0f),
-                                0.3f to MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
-                                1f to MaterialTheme.colorScheme.background.copy(alpha = 1f),
-                            )
-                        )
-                        .padding(bottom = 60.dp, top = 100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AddButton {
-                        showBottomSheet = true
-                    }
+                IconButton({
+                    onSettingsClick()
+                }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
+                        "",
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.BottomEnd
+            }
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showBottomSheet = false },
+                    sheetState = sheetState,
+                    dragHandle = {
+                        Box(modifier = Modifier.height(0.dp))
+                    },
+                    sheetGesturesEnabled = false,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrimColor = Color.Black.copy(.85f)
                 ) {
-                    IconButton({}) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
-                            "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-                if (showBottomSheet) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showBottomSheet = false },
-                        sheetState = sheetState,
-                        dragHandle = {
-                            Box(modifier = Modifier.height(0.dp))
-                        },
-                        sheetGesturesEnabled = false,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrimColor = Color.Black.copy(.85f)
+                    BottomSheetContent(
+                        viewModel = viewModel
                     ) {
-                        BottomSheetContent(
-                            viewModel = viewModel
-                        ) {
-                            showBottomSheet = false
-                        }
+                        showBottomSheet = false
                     }
                 }
             }
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -209,13 +236,15 @@ fun BottomSheetContent(
     viewModel.applyCyclesList(selectedTime)
 
     Column(
-        modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 35.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -277,7 +306,9 @@ fun BottomSheetContent(
             viewModel = viewModel
         )
         LazyRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 35.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             items(
@@ -311,7 +342,7 @@ fun BottomSheetContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 32.dp),
+                .padding(bottom = 35.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
@@ -407,7 +438,6 @@ fun CycleTable(
 
     Box(
         modifier = Modifier
-            .padding(vertical = 16.dp)
             .size(340.dp, 240.dp)
             .clip(RoundedCornerShape(10))
             .background(MaterialTheme.colorScheme.onSurface)
