@@ -1,7 +1,5 @@
 package com.wem.snoozy.presentation.entity
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,12 +12,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,8 +28,10 @@ fun CycleItemCard(
     onCycleClick: () -> Unit
 ) {
 
-    val cardColor = if (cycleItem.checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.surface
-    val icon = if (cycleItem.checked) Icons.Default.Notifications else Icons.Default.NotificationsNone
+    val cardColor =
+        if (cycleItem.checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.surface
+    val icon =
+        if (cycleItem.checked) Icons.Default.Notifications else Icons.Default.NotificationsNone
 
     Card(
         modifier = Modifier
@@ -42,7 +40,6 @@ fun CycleItemCard(
         colors = CardDefaults.cardColors().copy(
             containerColor = cardColor
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -56,7 +53,7 @@ fun CycleItemCard(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                cycleItem.time,
+                cycleItem.time.padStart(5, '0'),
                 fontSize = 35.sp,
                 fontFamily = myTypeFamily,
                 fontWeight = FontWeight(900),

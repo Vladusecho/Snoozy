@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,9 +30,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,12 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,24 +58,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wem.snoozy.R
 import com.wem.snoozy.presentation.entity.AlarmItemCard
 import com.wem.snoozy.presentation.entity.CycleItemCard
 import com.wem.snoozy.presentation.entity.myTypeFamily
+import com.wem.snoozy.presentation.utils.DatePickerDialog
+import com.wem.snoozy.presentation.utils.TimePickerDialog
+import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.MainViewModel
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-val myTypeFamily = FontFamily(
-    Font(R.font.public_sans_regular, FontWeight(400)),
-    Font(R.font.public_sans_semi_bold, FontWeight(600)),
-    Font(R.font.public_sans_black, FontWeight(1000))
-)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -170,7 +153,8 @@ fun MainScreen(
                             Box(modifier = Modifier.height(0.dp))
                         },
                         sheetGesturesEnabled = false,
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrimColor = Color.Black.copy(.85f)
                     ) {
                         BottomSheetContent(
                             viewModel = viewModel
@@ -181,145 +165,6 @@ fun MainScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (Int, Int) -> Unit
-) {
-    val timePickerState = rememberTimePickerState()
-
-    Dialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors().copy(
-                        selectorColor = MaterialTheme.colorScheme.primary,
-                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.tertiary,
-                        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.surface,
-                        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
-                        clockDialColor = MaterialTheme.colorScheme.surface,
-                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.tertiary
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(
-                        onClick = {
-                            onConfirm(
-                                timePickerState.hour,
-                                timePickerState.minute
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors().copy(
-                            containerColor = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            "Apply",
-                            fontSize = 20.sp,
-                            fontFamily = myTypeFamily,
-                            fontWeight = FontWeight(900),
-                            color = Color.Black
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DatePickerDialog(
-    initialDate: LocalDate,
-    onDismiss: () -> Unit,
-    onConfirm: (LocalDate) -> Unit
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialDate.toEpochDay() * 24 * 60 * 60 * 1000
-    )
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val date = LocalDate.ofEpochDay(millis / (24 * 60 * 60 * 1000))
-                        onConfirm(date)
-                    }
-                },
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.onBackground
-                ),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    "Apply",
-                    fontSize = 20.sp,
-                    fontFamily = myTypeFamily,
-                    fontWeight = FontWeight(900),
-                    color = Color.Black
-                )
-            }
-        },
-        colors = DatePickerDefaults.colors().copy(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    ) {
-        DatePicker(
-            showModeToggle = false,
-            state = datePickerState,
-            colors = DatePickerDefaults.colors().copy(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.tertiary,
-                headlineContentColor = MaterialTheme.colorScheme.tertiary,
-                weekdayContentColor = MaterialTheme.colorScheme.tertiary,
-                navigationContentColor = MaterialTheme.colorScheme.tertiary,
-                yearContentColor = MaterialTheme.colorScheme.tertiary,
-                dayContentColor = MaterialTheme.colorScheme.tertiary,
-                todayContentColor = MaterialTheme.colorScheme.tertiary
-            )
-        )
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun formatDateWithRelative(date: LocalDate): String {
-    val today = LocalDate.now()
-    val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy").withLocale(Locale.ENGLISH)
-
-    return when (date) {
-        today -> "Today"
-        today.plusDays(1) -> "Tomorrow"
-        today.plusDays(2) -> "Next day"
-        else -> date.format(formatter)
     }
 }
 
@@ -391,7 +236,7 @@ fun BottomSheetContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        selectedTime.hour.toString(),
+                        selectedTime.hour.toString().padStart(2, '0'),
                         fontSize = 60.sp,
                         fontFamily = myTypeFamily,
                         fontWeight = FontWeight(900),
@@ -513,7 +358,10 @@ fun BottomSheetContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { onCancelClick() }
+                onClick = { onCancelClick() },
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.onSurface
+                )
             ) {
                 Text(
                     "Cancel",
@@ -563,7 +411,6 @@ fun CycleTable(
             .size(340.dp, 240.dp)
             .clip(RoundedCornerShape(10))
             .background(MaterialTheme.colorScheme.onSurface)
-            .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10))
     ) {
         LazyColumn(
             modifier = Modifier,

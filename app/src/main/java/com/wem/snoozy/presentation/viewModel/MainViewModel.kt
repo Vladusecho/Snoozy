@@ -16,15 +16,15 @@ import java.time.format.DateTimeFormatter
 class MainViewModel : ViewModel() {
 
     val alarms = MutableStateFlow(listOf(
-        AlarmItem(0, "Monday", "8:00", "12:00", checked = false),
-        AlarmItem(1, "Thursday", "8:00", "12:00", checked = true),
-        AlarmItem(2, "Saturday", "8:00", "12:00", checked = true),
-        AlarmItem(3, "Wednesday", "8:00", "12:00", checked = false),
-        AlarmItem(4, "Friday", "8:00", "12:00", checked = false),
-        AlarmItem(5, "Monday", "8:00", "12:00",checked = false),
-        AlarmItem(6, "Monday", "8:00", "12:00",checked = true),
-        AlarmItem(7, "Monday", "8:00", "12:00",checked = true),
-        AlarmItem(8, "Monday", "8:00", "12:00",checked = true),
+        AlarmItem(0, "Monday", "08:00", "12:00", checked = false),
+        AlarmItem(1, "Thursday", "08:00", "12:00", checked = true),
+        AlarmItem(2, "Saturday", "08:00", "12:00", checked = true),
+        AlarmItem(3, "Wednesday", "08:00", "12:00", checked = false),
+        AlarmItem(4, "Friday", "08:00", "12:00", checked = false),
+        AlarmItem(5, "Monday", "08:00", "12:00",checked = false),
+        AlarmItem(6, "Monday", "08:00", "12:00",checked = true),
+        AlarmItem(7, "Monday", "08:00", "12:00",checked = true),
+        AlarmItem(8, "Monday", "08:00", "12:00",checked = true),
     ))
 
     val cycles = MutableStateFlow(mutableListOf<CycleItem>())
