@@ -45,7 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.wem.snoozy.presentation.entity.myTypeFamily
+import com.wem.snoozy.presentation.itemCard.myTypeFamily
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -300,28 +300,6 @@ fun SettingsScreen(
                     }
                 }
                 HorizontalDivider(Modifier, 1.dp, MaterialTheme.colorScheme.tertiary)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 30.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors().copy(
-                            containerColor = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            "Save",
-                            fontSize = 20.sp,
-                            fontFamily = myTypeFamily,
-                            fontWeight = FontWeight(900),
-                            color = Color.Black
-                        )
-                    }
-                }
             }
         }
     }

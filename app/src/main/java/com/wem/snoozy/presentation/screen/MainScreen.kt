@@ -1,6 +1,7 @@
 package com.wem.snoozy.presentation.screen
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,18 +58,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wem.snoozy.R
+import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.navigation.AppNavGraph
 import com.wem.snoozy.domain.navigation.Screen
 import com.wem.snoozy.domain.navigation.rememberNavState
-import com.wem.snoozy.presentation.entity.AlarmItemCard
-import com.wem.snoozy.presentation.entity.CycleItemCard
-import com.wem.snoozy.presentation.entity.myTypeFamily
+import com.wem.snoozy.presentation.itemCard.AlarmItemCard
+import com.wem.snoozy.presentation.itemCard.CycleItemCard
+import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.utils.DatePickerDialog
+import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.MainViewModel
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,6 +114,7 @@ fun MainScreenContent(
     var showBottomSheet by remember { mutableStateOf(false) }
     val alarms = viewModel.alarms.collectAsState()
 
+
     Box(
         modifier = Modifier
             .padding(paddingValues)
@@ -121,10 +126,18 @@ fun MainScreenContent(
                 alarms.value,
                 key = { it.id }
             ) { alarm ->
-                AlarmItemCard(
-                    alarmItem = alarm
+                Box(
+                    modifier = Modifier.animateItem()
                 ) {
-                    viewModel.toggleAlarm(alarm.id)
+                    SwipeToDeleteAlarmItem(
+                        alarmItem = alarm,
+                        onDelete = {
+                            viewModel.swipeToDelete(alarm.id)
+                        },
+                        onToggle = {
+                            viewModel.toggleAlarm(alarm)
+                        }
+                    )
                 }
             }
             item {
@@ -208,6 +221,9 @@ fun BottomSheetContent(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    val cycles = viewModel.cycles.collectAsState()
+    val selectedCycleId = viewModel.selectedCycleId.collectAsState()
 
     val daysState = viewModel.days.collectAsState()
 
@@ -402,8 +418,23 @@ fun BottomSheetContent(
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
+
             Button(
-                onClick = {},
+                onClick = {
+                    val alarmItem = AlarmItem(
+                        Random.nextInt(0, 10000),
+                        formatDateWithRelative(selectedDate),
+                        selectedTime.hour.toString()
+                            .padStart(2, '0') + ":" + selectedTime.minute.toString()
+                            .padStart(2, '0'),
+                        if (selectedCycleId.value != -1) cycles.value.first().time else "",
+                        true,
+                        ""
+                    )
+
+                    viewModel.addNewAlarm(alarmItem)
+                    onCancelClick()
+                },
                 colors = ButtonDefaults.buttonColors().copy(
                     containerColor = MaterialTheme.colorScheme.onBackground
                 )

@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.wem.snoozy.presentation.entity.myTypeFamily
+import com.wem.snoozy.presentation.itemCard.myTypeFamily
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

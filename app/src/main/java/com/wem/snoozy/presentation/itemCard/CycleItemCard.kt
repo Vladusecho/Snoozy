@@ -1,4 +1,4 @@
-package com.wem.snoozy.presentation.entity
+package com.wem.snoozy.presentation.itemCard
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wem.snoozy.domain.entity.CycleItem
 import com.wem.snoozy.ui.theme.SnoozyTheme
 
 @Composable

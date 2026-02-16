@@ -1,4 +1,4 @@
-package com.wem.snoozy.presentation.entity
+package com.wem.snoozy.domain.entity
 
 data class CycleItem(
     val id: Int,

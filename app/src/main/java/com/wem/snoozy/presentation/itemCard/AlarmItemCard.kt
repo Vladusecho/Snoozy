@@ -1,4 +1,4 @@
-package com.wem.snoozy.presentation.entity
+package com.wem.snoozy.presentation.itemCard
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,13 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wem.snoozy.R
+import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.ui.theme.SnoozyTheme
 
 val myTypeFamily = FontFamily(
@@ -78,7 +74,7 @@ fun AlarmItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = alarmItem.dayOfWeek,
+                    text = alarmItem.ringDay,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
                     color = cardType
@@ -96,7 +92,7 @@ fun AlarmItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = alarmItem.hours,
+                    text = alarmItem.ringHours,
                     fontSize = 60.sp,
                     fontFamily = myTypeFamily,
                     fontWeight = if (checked) FontWeight(900) else FontWeight(600),
@@ -130,6 +126,6 @@ fun AlarmItemCard(
 @Composable
 fun AlarmItemCardPreview() {
     SnoozyTheme(darkTheme = false) {
-        AlarmItemCard(alarmItem = AlarmItem(0, "Monday", "7:00", "22:00", checked = false))
+        AlarmItemCard(alarmItem = AlarmItem(0, "Monday", "7:00", "22:00", checked = false, ""))
     }
 }

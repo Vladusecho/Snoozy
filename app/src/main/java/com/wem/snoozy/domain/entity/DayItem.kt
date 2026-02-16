@@ -1,4 +1,4 @@
-package com.wem.snoozy.presentation.entity
+package com.wem.snoozy.domain.entity
 
 data class DayItem(
     val id: Int,

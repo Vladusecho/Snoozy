@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wem.snoozy.presentation.entity.myTypeFamily
+import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale

@@ -3,31 +3,43 @@ package com.wem.snoozy.presentation.viewModel
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.wem.snoozy.presentation.entity.AlarmItem
-import com.wem.snoozy.presentation.entity.CycleItem
-import com.wem.snoozy.presentation.entity.DayItem
-import com.wem.snoozy.presentation.entity.DaysName
+import androidx.lifecycle.viewModelScope
+import com.wem.snoozy.data.repository.AlarmRepositoryImpl
+import com.wem.snoozy.domain.entity.AlarmItem
+import com.wem.snoozy.domain.entity.CycleItem
+import com.wem.snoozy.domain.entity.DayItem
+import com.wem.snoozy.domain.entity.DaysName
+import com.wem.snoozy.domain.usecase.AddNewAlarmUseCase
+import com.wem.snoozy.domain.usecase.DeleteAlarmUseCase
+import com.wem.snoozy.domain.usecase.GetAllAlarmsUseCase
+import com.wem.snoozy.domain.usecase.ToggleAlarmStateUseCase
+import com.wem.snoozy.presentation.screen.MainScreens
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
-class MainViewModel : ViewModel() {
+class MainViewModel() : ViewModel() {
 
-    val alarms = MutableStateFlow(listOf(
-        AlarmItem(0, "Monday", "08:00", "12:00", checked = false),
-        AlarmItem(1, "Thursday", "08:00", "12:00", checked = true),
-        AlarmItem(2, "Saturday", "08:00", "12:00", checked = true),
-        AlarmItem(3, "Wednesday", "08:00", "12:00", checked = false),
-        AlarmItem(4, "Friday", "08:00", "12:00", checked = false),
-        AlarmItem(5, "Monday", "08:00", "12:00",checked = false),
-        AlarmItem(6, "Monday", "08:00", "12:00",checked = true),
-        AlarmItem(7, "Monday", "08:00", "12:00",checked = true),
-        AlarmItem(8, "Monday", "08:00", "12:00",checked = true),
-    ))
+    private val repository = AlarmRepositoryImpl()
+    private val getAllAlarmsUseCase = GetAllAlarmsUseCase(repository)
+    private val toggleAlarmStateUseCase = ToggleAlarmStateUseCase(repository)
+    private val addNewAlarmUseCase = AddNewAlarmUseCase(repository)
+
+    private val deleteAlarmUseCase = DeleteAlarmUseCase(repository)
+
 
     val cycles = MutableStateFlow(mutableListOf<CycleItem>())
+
+    val selectedCycleId = MutableStateFlow(-1)
+
+    val alarms = getAllAlarmsUseCase().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
 
     val days = MutableStateFlow(listOf(
         DayItem(0, DaysName.SUNDAY.getDisplayName(), false),
@@ -39,19 +51,16 @@ class MainViewModel : ViewModel() {
         DayItem(6, DaysName.SATURDAY.getDisplayName(), false),
     ))
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    val savedTime = MutableStateFlow<LocalTime>(LocalTime.now())
-
     fun toggleDay(id: Int) {
         val currentList = days.value.toMutableList()
         currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it}
         days.value = currentList
     }
 
-    fun toggleAlarm(id: Int) {
-        val currentList = alarms.value.toMutableList()
-        currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it}
-        alarms.value = currentList
+    fun toggleAlarm(alarmItem: AlarmItem) {
+        viewModelScope.launch {
+            toggleAlarmStateUseCase(alarmItem)
+        }
     }
 
     fun toggleCycle(id: Int) {
@@ -59,12 +68,14 @@ class MainViewModel : ViewModel() {
         if (currentList.find { it.checked && it.id == id } != null) {
             currentList.replaceAll { it.copy(checked = false) }
             Log.d("Cycles", "All cycles unchecked")
+            selectedCycleId.value = -1
         } else if (currentList.find { it.checked && it.id != id } != null){
             currentList.replaceAll { it.copy(checked = false) }
             currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it }
-//            Log.d("Cycles", "Cycle $id checked")
+            selectedCycleId.value = id
         } else {
             currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it }
+            selectedCycleId.value = id
         }
         cycles.value = currentList.sortedWith(
             compareByDescending<CycleItem> { it.checked }
@@ -96,5 +107,17 @@ class MainViewModel : ViewModel() {
 
         cycles.value = newItems.sortedByDescending { it.id }.toMutableList()
 
+    }
+
+    fun addNewAlarm(alarmItem: AlarmItem) {
+        viewModelScope.launch {
+            addNewAlarmUseCase(alarmItem)
+        }
+    }
+
+    fun swipeToDelete(alarmId: Int) {
+        viewModelScope.launch {
+            deleteAlarmUseCase(alarmId)
+        }
     }
 }
