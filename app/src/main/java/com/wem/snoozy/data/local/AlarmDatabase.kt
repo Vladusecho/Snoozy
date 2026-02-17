@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [AlarmItemModel::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AlarmDatabase : RoomDatabase(){
@@ -33,7 +33,9 @@ abstract class AlarmDatabase : RoomDatabase(){
                     context = context,
                     klass = AlarmDatabase::class.java,
                     name = DB_NAME
-                ).build()
+                )
+                    .fallbackToDestructiveMigration(true)
+                    .build()
 
                 instance = db
                 return db

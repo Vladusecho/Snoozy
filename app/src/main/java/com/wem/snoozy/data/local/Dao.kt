@@ -11,7 +11,7 @@ interface Dao {
     @Insert
     suspend fun addAlarm(alarmItemModel: AlarmItemModel)
 
-    @Query("SELECT * FROM alarms")
+    @Query("SELECT * FROM alarms ORDER BY ringHoursMillis ASC")
     fun getAlarms(): Flow<List<AlarmItemModel>>
 
     @Query("UPDATE alarms SET checked = :isChecked WHERE id = :alarmId")

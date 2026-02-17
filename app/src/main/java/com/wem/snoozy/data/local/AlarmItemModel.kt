@@ -9,6 +9,7 @@ data class AlarmItemModel(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val ringDay: String,
     val ringHours: String,
+    val ringHoursMillis: Long,
     val timeToBed: String,
     val checked: Boolean,
     val repeatDays: String
