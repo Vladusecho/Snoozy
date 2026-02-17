@@ -234,6 +234,9 @@ fun BottomSheetContent(
             onConfirm = { hour, minute ->
                 selectedTime = LocalTime.of(hour, minute)
                 showDialog = false
+            },
+            onCancelClick = {
+                showDialog = false
             }
         )
     }
@@ -244,6 +247,9 @@ fun BottomSheetContent(
             onDismiss = { showDatePicker = false },
             onConfirm = { date ->
                 selectedDate = date
+                showDatePicker = false
+            },
+            onCancelClick = {
                 showDatePicker = false
             }
         )

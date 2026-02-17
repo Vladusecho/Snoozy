@@ -30,7 +30,8 @@ import java.util.Locale
 fun DatePickerDialog(
     initialDate: LocalDate,
     onDismiss: () -> Unit,
-    onConfirm: (LocalDate) -> Unit
+    onConfirm: (LocalDate) -> Unit,
+    onCancelClick: () -> Unit
 ) {
     val todayStart = LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000
 
@@ -64,6 +65,23 @@ fun DatePickerDialog(
                     fontFamily = myTypeFamily,
                     fontWeight = FontWeight(900),
                     color = Color.Black
+                )
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = { onCancelClick() },
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier.padding(vertical = 16.dp)
+            ) {
+                Text(
+                    "Cancel",
+                    fontSize = 20.sp,
+                    fontFamily = myTypeFamily,
+                    fontWeight = FontWeight(900),
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
         },

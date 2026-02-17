@@ -32,7 +32,8 @@ import com.wem.snoozy.presentation.itemCard.myTypeFamily
 @Composable
 fun TimePickerDialog(
     onDismiss: () -> Unit,
-    onConfirm: (Int, Int) -> Unit
+    onConfirm: (Int, Int) -> Unit,
+    onCancelClick: () -> Unit
 ) {
     val timePickerState = rememberTimePickerState()
 
@@ -70,8 +71,22 @@ fun TimePickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    Button(
+                        onClick = { onCancelClick() },
+                        colors = ButtonDefaults.buttonColors().copy(
+                            containerColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Text(
+                            "Cancel",
+                            fontSize = 20.sp,
+                            fontFamily = myTypeFamily,
+                            fontWeight = FontWeight(900),
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
                     Button(
                         onClick = {
                             onConfirm(
