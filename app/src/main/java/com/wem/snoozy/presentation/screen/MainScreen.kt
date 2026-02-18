@@ -74,7 +74,6 @@ import com.wem.snoozy.presentation.viewModel.MainViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.random.Random
-import kotlin.toString
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,7 +159,10 @@ fun MainScreenContent(
         }
         if (showBottomSheet) {
             ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
+                onDismissRequest = {
+                    showBottomSheet = false
+                    viewModel.resetStates()
+                },
                 sheetState = sheetState,
                 dragHandle = {
                     Box(modifier = Modifier.height(0.dp))
@@ -173,6 +175,7 @@ fun MainScreenContent(
                     viewModel = viewModel
                 ) {
                     showBottomSheet = false
+                    viewModel.resetStates()
                 }
             }
         }
@@ -281,6 +284,7 @@ fun BottomSheetContent(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     val cycles = viewModel.cycles.collectAsState()
+
     val selectedCycleId = viewModel.selectedCycleId.collectAsState()
 
 

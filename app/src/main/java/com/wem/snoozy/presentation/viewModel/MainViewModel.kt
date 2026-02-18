@@ -14,10 +14,10 @@ import com.wem.snoozy.domain.usecase.AddNewAlarmUseCase
 import com.wem.snoozy.domain.usecase.DeleteAlarmUseCase
 import com.wem.snoozy.domain.usecase.GetAllAlarmsUseCase
 import com.wem.snoozy.domain.usecase.ToggleAlarmStateUseCase
-import com.wem.snoozy.presentation.screen.MainScreens
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -31,7 +31,7 @@ class MainViewModel() : ViewModel() {
     private val deleteAlarmUseCase = DeleteAlarmUseCase(repository)
 
 
-    val cycles = MutableStateFlow(mutableListOf<CycleItem>())
+    val cycles = MutableStateFlow(listOf<CycleItem>())
 
     val selectedCycleId = MutableStateFlow(-1)
 
@@ -41,19 +41,21 @@ class MainViewModel() : ViewModel() {
         initialValue = emptyList()
     )
 
-    val days = MutableStateFlow(listOf(
-        DayItem(0, DaysName.SUNDAY.getDisplayName(), false),
-        DayItem(1, DaysName.MONDAY.getDisplayName(), false),
-        DayItem(2, DaysName.TUESDAY.getDisplayName(), false),
-        DayItem(3, DaysName.WEDNESDAY.getDisplayName(), false),
-        DayItem(4, DaysName.THURSDAY.getDisplayName(), false),
-        DayItem(5, DaysName.FRIDAY.getDisplayName(), false),
-        DayItem(6, DaysName.SATURDAY.getDisplayName(), false),
-    ))
+    val days = MutableStateFlow(
+        listOf(
+            DayItem(0, DaysName.SUNDAY.getDisplayName(), false),
+            DayItem(1, DaysName.MONDAY.getDisplayName(), false),
+            DayItem(2, DaysName.TUESDAY.getDisplayName(), false),
+            DayItem(3, DaysName.WEDNESDAY.getDisplayName(), false),
+            DayItem(4, DaysName.THURSDAY.getDisplayName(), false),
+            DayItem(5, DaysName.FRIDAY.getDisplayName(), false),
+            DayItem(6, DaysName.SATURDAY.getDisplayName(), false),
+        )
+    )
 
     fun toggleDay(id: Int) {
         val currentList = days.value.toMutableList()
-        currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it}
+        currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it }
         days.value = currentList
     }
 
@@ -69,7 +71,7 @@ class MainViewModel() : ViewModel() {
             currentList.replaceAll { it.copy(checked = false) }
             Log.d("Cycles", "All cycles unchecked")
             selectedCycleId.value = -1
-        } else if (currentList.find { it.checked && it.id != id } != null){
+        } else if (currentList.find { it.checked && it.id != id } != null) {
             currentList.replaceAll { it.copy(checked = false) }
             currentList.replaceAll { if (it.id == id) it.copy(checked = !it.checked) else it }
             selectedCycleId.value = id
@@ -81,6 +83,19 @@ class MainViewModel() : ViewModel() {
             compareByDescending<CycleItem> { it.checked }
                 .thenByDescending { it.id }
         ).toMutableList()
+    }
+
+    fun resetStates() {
+        cycles.update {
+            emptyList()
+        }
+        days.update { oldList ->
+            val newList = oldList.map { dayItem ->
+                if (dayItem.checked) dayItem.copy(checked = false) else dayItem
+            }
+            newList
+        }
+        Log.d("myreset", days.value.toString())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -99,11 +114,10 @@ class MainViewModel() : ViewModel() {
             selectedTime = selectedTime.minusMinutes(90)
         }
 
-        if (cycles.value.isNotEmpty() && (newItems.toSet() == cycles.value.map { it.copy(checked = false) }.toSet())) {
+        if (cycles.value.isNotEmpty() && (newItems.toSet() == cycles.value.map { it.copy(checked = false) }
+                .toSet())) {
             return
         }
-
-        cycles.value.clear()
 
         cycles.value = newItems.sortedByDescending { it.id }.toMutableList()
 
