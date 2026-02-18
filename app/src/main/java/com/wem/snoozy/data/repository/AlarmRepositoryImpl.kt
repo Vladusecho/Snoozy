@@ -1,5 +1,7 @@
 package com.wem.snoozy.data.repository
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.wem.snoozy.SnoozyApp
 import com.wem.snoozy.data.local.AlarmDatabase
 import com.wem.snoozy.data.mapper.toAlarmItemModel
@@ -24,6 +26,7 @@ class AlarmRepositoryImpl : AlarmRepository {
         AlarmItem(8, "Monday", "08:00", "12:00",checked = true, ""),
     ))
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun addNewAlarm(alarmItem: AlarmItem) {
         AlarmDatabase.getInstance(SnoozyApp.getContext()).dao().addAlarm(alarmItem.toAlarmItemModel())
     }

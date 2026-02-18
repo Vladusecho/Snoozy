@@ -1,5 +1,8 @@
 package com.wem.snoozy.presentation.itemCard
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +18,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
@@ -44,8 +49,18 @@ fun AlarmItemCard(
 
     val checked = alarmItem.checked
 
-    val cardColor =
-        if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+    val cardColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+        animationSpec = tween(300),
+        label = "card_color"
+    )
+
+    val textScale by animateFloatAsState(
+        targetValue = if (checked) 1.05f else 1f,
+        animationSpec = tween(500),
+        label = "text_scale"
+    )
+
     val cardType =
         if (checked) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiary.copy(0.6f)
 
@@ -96,7 +111,8 @@ fun AlarmItemCard(
                     fontSize = 60.sp,
                     fontFamily = myTypeFamily,
                     fontWeight = if (checked) FontWeight(900) else FontWeight(600),
-                    color = cardType
+                    color = cardType,
+                    modifier = Modifier.scale(textScale)
                 )
                 Switch(
                     checked = checked,

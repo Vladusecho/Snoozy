@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.wem.snoozy.data.local.AlarmItemModel
 import com.wem.snoozy.domain.entity.AlarmItem
-import com.wem.snoozy.presentation.utils.timeToTimestamp
+import com.wem.snoozy.presentation.utils.timeToMilli
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,12 +22,11 @@ fun AlarmItem.toAlarmItemModel() = AlarmItemModel(
     this.id,
     this.ringDay,
     this.ringHours,
-    timeToTimestamp(this.ringHours),
+    timeToMilli(this.ringHours),
     this.timeToBed,
     this.checked,
     this.repeatDays
 )
-
 
 
 fun List<AlarmItemModel>.toAlarmItems() = this.map {

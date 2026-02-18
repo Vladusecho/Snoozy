@@ -7,19 +7,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun timeToTimestamp(timeString: String): Long {
-    val localTime = LocalTime.parse(timeString)
-
-    val now = LocalDateTime.now()
-    val dateTime = LocalDateTime.of(
-        now.year,
-        now.month,
-        now.dayOfMonth,
-        localTime.hour,
-        localTime.minute
-    )
-    return dateTime
-        .atZone(ZoneId.systemDefault())
-        .toInstant()
-        .toEpochMilli()
+fun timeToMilli(timeString: String): Int {
+    return timeString.split(":")[0].toInt() * 60 + timeString.split(":")[1].toInt()
 }

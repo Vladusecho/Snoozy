@@ -20,6 +20,8 @@ val LightBlack = Color(0xff4A4947)
 
 val Lime = Color(0xffAAFFBD)
 
+val LightGray = Color(0xffEFF1F3)
+
 //Dark Theme
 
 val CoralRed = Color(0xffEC625F)

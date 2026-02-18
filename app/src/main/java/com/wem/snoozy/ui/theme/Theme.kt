@@ -28,7 +28,7 @@ private val DarkColorScheme = darkColorScheme(
 
 private val LightColorScheme = lightColorScheme(
     primary = AntiqueWhite, // alarm on
-    secondary = GraphiteGray.copy(0.4f), // alarm off
+    secondary = LightGray, // alarm off
     onPrimary = TaupeGray, // alarm text on
     onSecondary = AntiqueWhite, // alarm text off
     tertiary = LightBlack, // alarm time text
