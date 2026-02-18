@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,8 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,17 +49,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
+import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    viewModel: SettingsViewModel,
     navHostController: NavHostController
 ) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    val textFieldCycle = remember { mutableStateOf("") }
-    val textFieldSleep = remember { mutableStateOf("") }
+    val textFieldCycle = remember { mutableStateOf(uiState.cycleLength) }
+    val textFieldSleep = remember { mutableStateOf(uiState.sleepStartTime) }
 
-    val sleepState = remember { mutableStateOf(false) }
+    val sleepState = remember { mutableStateOf(uiState.sleepStartTime != "0") }
 
     Scaffold(
         topBar = {
@@ -71,7 +77,11 @@ fun SettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navHostController.popBackStack() }) {
+                    IconButton(onClick = {
+                        navHostController.popBackStack()
+                        viewModel.updateCycleLength(textFieldCycle.value)
+                        viewModel.updateSleepStartTime(textFieldSleep.value)
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -107,9 +117,9 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.tertiary,
                     )
                     Switch(
-                        checked = false,
+                        checked = uiState.isDarkTheme,
                         onCheckedChange = {
-                            { }
+                            viewModel.updateDarkTheme(it)
                         },
                         enabled = true,
                         colors = SwitchDefaults.colors(
@@ -151,9 +161,8 @@ fun SettingsScreen(
                             ),
                             value = textFieldCycle.value,
                             onValueChange = {
-                                if (textFieldCycle.value.length <= 2) {
-                                    textFieldCycle.value = it
-                                }
+                                val truncated = it.take(3)
+                                textFieldCycle.value = truncated
                             },
                             modifier = Modifier
                                 .width(80.dp)
@@ -172,7 +181,6 @@ fun SettingsScreen(
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             decorationBox = { innerTextField ->
-                                // Контейнер без дополнительных отступов
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
@@ -218,6 +226,9 @@ fun SettingsScreen(
                     Switch(
                         checked = sleepState.value,
                         onCheckedChange = {
+                            if (!it) {
+                                textFieldSleep.value = "0"
+                            }
                             sleepState.value = it
                         },
                         enabled = true,
@@ -250,9 +261,8 @@ fun SettingsScreen(
                             ),
                             value = textFieldSleep.value,
                             onValueChange = {
-                                if (textFieldSleep.value.length <= 2) {
-                                    textFieldSleep.value = it
-                                }
+                                val truncated = it.take(3)
+                                textFieldSleep.value = truncated
                             },
                             modifier = Modifier
                                 .width(80.dp)

@@ -76,7 +76,9 @@ fun CycleItemCard(
 @Preview(showBackground = true)
 @Composable
 fun CyclesPreview() {
-    SnoozyTheme {
+    SnoozyTheme(
+        darkTheme = false
+    ) {
         CycleItemCard(CycleItem(0, "22:00", "7", false)) {}
     }
 }

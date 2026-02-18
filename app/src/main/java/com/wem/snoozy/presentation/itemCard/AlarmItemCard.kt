@@ -1,6 +1,8 @@
 package com.wem.snoozy.presentation.itemCard
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +59,7 @@ fun AlarmItemCard(
 
     val textScale by animateFloatAsState(
         targetValue = if (checked) 1.05f else 1f,
-        animationSpec = tween(500),
+        animationSpec = tween(800, easing = LinearOutSlowInEasing),
         label = "text_scale"
     )
 

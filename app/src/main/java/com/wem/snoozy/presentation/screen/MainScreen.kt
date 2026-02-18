@@ -71,6 +71,7 @@ import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.MainViewModel
+import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.random.Random
@@ -78,7 +79,9 @@ import kotlin.random.Random
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    settingsViewModel: SettingsViewModel
+) {
 
     val navState = rememberNavState()
 
@@ -86,7 +89,9 @@ fun MainScreen() {
         AppNavGraph(
             navState.navHostController,
             settingsScreenContent = {
-                SettingsScreen(navState.navHostController)
+                SettingsScreen(
+                    viewModel = settingsViewModel,
+                    navState.navHostController)
             },
             homeScreenContent = {
                 MainScreenContent(paddingValues) {
