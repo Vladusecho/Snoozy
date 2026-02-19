@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +61,12 @@ fun SettingsScreen(
     val textFieldSleep = remember { mutableStateOf(uiState.sleepStartTime) }
 
     val sleepState = remember { mutableStateOf(uiState.sleepStartTime != "0") }
+
+    BackHandler {
+        navHostController.popBackStack()
+        viewModel.updateCycleLength(textFieldCycle.value)
+        viewModel.updateSleepStartTime(textFieldSleep.value)
+    }
 
     Scaffold(
         topBar = {
