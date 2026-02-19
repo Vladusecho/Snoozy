@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.data.repository.AlarmRepositoryImpl
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.entity.CycleItem
@@ -21,15 +22,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
-class MainViewModel() : ViewModel() {
+class MainViewModel(
+    private val userPreferencesManager: UserPreferencesManager
+) : ViewModel() {
 
     private val repository = AlarmRepositoryImpl()
     private val getAllAlarmsUseCase = GetAllAlarmsUseCase(repository)
     private val toggleAlarmStateUseCase = ToggleAlarmStateUseCase(repository)
     private val addNewAlarmUseCase = AddNewAlarmUseCase(repository)
-
     private val deleteAlarmUseCase = DeleteAlarmUseCase(repository)
 
+    val cycleLength = userPreferencesManager.cycleLengthFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = "90"
+    )
+    val sleepStartTime = userPreferencesManager.sleepStartTimeFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = "0"
+    )
 
     val cycles = MutableStateFlow(listOf<CycleItem>())
 
@@ -106,12 +118,12 @@ class MainViewModel() : ViewModel() {
         val newItems = mutableListOf<CycleItem>()
 
         for (i in 1..7) {
-            val minusMinutes = selectedTime.minusMinutes(90)
+            val minusMinutes = selectedTime.minusMinutes(cycleLength.value!!.toLong()).minusMinutes(sleepStartTime.value!!.toLong())
             val hours = minusMinutes.hour.toString()
             val minutes = minusMinutes.minute.toString().padStart(2, '0')
             val cycleItem = CycleItem(i, "$hours:$minutes", i.toString(), checked = false)
             newItems.add(cycleItem)
-            selectedTime = selectedTime.minusMinutes(90)
+            selectedTime = selectedTime.minusMinutes(cycleLength.value!!.toLong())
         }
 
         if (cycles.value.isNotEmpty() && (newItems.toSet() == cycles.value.map { it.copy(checked = false) }

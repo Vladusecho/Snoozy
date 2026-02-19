@@ -6,7 +6,7 @@ class EditAlarmUseCase(
     private val repository: AlarmRepository
 ) {
 
-    operator fun invoke(alarmId: Int) {
+    suspend operator fun invoke(alarmId: Int) {
         repository.editAlarm(alarmId)
     }
 }

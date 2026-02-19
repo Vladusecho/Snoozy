@@ -1,6 +1,5 @@
 package com.wem.snoozy.presentation.screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +17,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -248,7 +245,9 @@ fun SettingsScreen(
                 }
                 if (sleepState.value) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -260,9 +259,8 @@ fun SettingsScreen(
                                 )
                             ),
                             value = textFieldSleep.value,
-                            onValueChange = {
-                                val truncated = it.take(3)
-                                textFieldSleep.value = truncated
+                            onValueChange = { string ->
+                                textFieldSleep.value = string
                             },
                             modifier = Modifier
                                 .width(80.dp)

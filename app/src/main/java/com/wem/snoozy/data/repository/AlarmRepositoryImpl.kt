@@ -14,24 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class AlarmRepositoryImpl : AlarmRepository {
 
-    private val initAlarmsFlow = MutableStateFlow(listOf(
-        AlarmItem(0, "Monday", "08:00", "12:00", checked = false, ""),
-        AlarmItem(1, "Thursday", "08:00", "12:00", checked = true, ""),
-        AlarmItem(2, "Saturday", "08:00", "12:00", checked = true, ""),
-        AlarmItem(3, "Wednesday", "08:00", "12:00", checked = false, ""),
-        AlarmItem(4, "Friday", "08:00", "12:00", checked = false, ""),
-        AlarmItem(5, "Monday", "08:00", "12:00",checked = false, ""),
-        AlarmItem(6, "Monday", "08:00", "12:00",checked = true, ""),
-        AlarmItem(7, "Monday", "08:00", "12:00",checked = true, ""),
-        AlarmItem(8, "Monday", "08:00", "12:00",checked = true, ""),
-    ))
-
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun addNewAlarm(alarmItem: AlarmItem) {
         AlarmDatabase.getInstance(SnoozyApp.getContext()).dao().addAlarm(alarmItem.toAlarmItemModel())
     }
 
-    override fun editAlarm(alarmId: Int) {
+    override suspend fun editAlarm(alarmId: Int) {
         TODO("Not yet implemented")
     }
 

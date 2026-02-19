@@ -80,6 +80,7 @@ import kotlin.random.Random
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    mainViewModel: MainViewModel,
     settingsViewModel: SettingsViewModel
 ) {
 
@@ -91,10 +92,14 @@ fun MainScreen(
             settingsScreenContent = {
                 SettingsScreen(
                     viewModel = settingsViewModel,
-                    navState.navHostController)
+                    navHostController = navState.navHostController
+                )
             },
             homeScreenContent = {
-                MainScreenContent(paddingValues) {
+                MainScreenContent(
+                    paddingValues = paddingValues,
+                    viewModel = mainViewModel
+                ) {
                     navState.navigateTo(Screen.Settings.route)
                 }
             }
@@ -107,7 +112,7 @@ fun MainScreen(
 @Composable
 fun MainScreenContent(
     paddingValues: PaddingValues,
-    viewModel: MainViewModel = viewModel(),
+    viewModel: MainViewModel,
     onSettingsClick: () -> Unit
 ) {
 
