@@ -12,10 +12,9 @@ class NavigationState(
     fun navigateTo(route: String) {
         navHostController.navigate(route) {
             launchSingleTop = true
-            popUpTo(navHostController.graph.findStartDestination().id) {
-                saveState = true
+            popUpTo(navHostController.currentBackStackEntry?.destination?.route ?: return@navigate) {
+                inclusive = true
             }
-            restoreState = true
         }
     }
 }

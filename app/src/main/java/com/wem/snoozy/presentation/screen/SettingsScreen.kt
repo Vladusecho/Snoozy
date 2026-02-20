@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +32,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,14 +49,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.wem.snoozy.domain.navigation.MyNavItem
+import com.wem.snoozy.domain.navigation.NavigationState
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel,
-    navHostController: NavHostController
+    viewModel: SettingsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -62,11 +66,13 @@ fun SettingsScreen(
 
     val sleepState = remember { mutableStateOf(uiState.sleepStartTime != "0") }
 
-    BackHandler {
-        navHostController.popBackStack()
-        viewModel.updateCycleLength(textFieldCycle.value)
-        viewModel.updateSleepStartTime(textFieldSleep.value)
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.updateCycleLength(textFieldCycle.value)
+            viewModel.updateSleepStartTime(textFieldSleep.value)
+        }
     }
+
 
     Scaffold(
         topBar = {
@@ -79,19 +85,6 @@ fun SettingsScreen(
                         fontWeight = FontWeight(700),
                         color = MaterialTheme.colorScheme.tertiary,
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navHostController.popBackStack()
-                        viewModel.updateCycleLength(textFieldCycle.value)
-                        viewModel.updateSleepStartTime(textFieldSleep.value)
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors().copy(
                     containerColor = MaterialTheme.colorScheme.background

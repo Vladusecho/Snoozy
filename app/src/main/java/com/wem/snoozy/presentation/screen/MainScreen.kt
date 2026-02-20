@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,11 +60,14 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.wem.snoozy.R
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.navigation.AppNavGraph
+import com.wem.snoozy.domain.navigation.BottomBarTabs
 import com.wem.snoozy.domain.navigation.Screen
 import com.wem.snoozy.domain.navigation.rememberNavState
+import com.wem.snoozy.domain.navigation.tabs
 import com.wem.snoozy.presentation.itemCard.CycleItemCard
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.utils.DatePickerDialog
@@ -84,24 +88,47 @@ fun MainScreen(
     settingsViewModel: SettingsViewModel
 ) {
 
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
     val navState = rememberNavState()
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 42.dp).padding(bottom = 80.dp)
+                    .fillMaxWidth()
+                    .height(64.dp)
+            ) {
+                BottomBarTabs(
+                    tabs,
+                    selectedTab = selectedTabIndex,
+                    onTabSelected = {
+                        selectedTabIndex = tabs.indexOf(it)
+                        navState.navigateTo(it.screen.route)
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
         AppNavGraph(
             navState.navHostController,
             settingsScreenContent = {
                 SettingsScreen(
-                    viewModel = settingsViewModel,
-                    navHostController = navState.navHostController
+                    viewModel = settingsViewModel
                 )
             },
             homeScreenContent = {
                 MainScreenContent(
                     paddingValues = paddingValues,
                     viewModel = mainViewModel
-                ) {
-                    navState.navigateTo(Screen.Settings.route)
-                }
+                )
+            },
+            profileScreenContent = {
+                ProfileScreen()
+            },
+            groupsScreenContent = {
+                GroupsScreen()
             }
         )
     }
@@ -112,8 +139,7 @@ fun MainScreen(
 @Composable
 fun MainScreenContent(
     paddingValues: PaddingValues,
-    viewModel: MainViewModel,
-    onSettingsClick: () -> Unit
+    viewModel: MainViewModel
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -143,30 +169,30 @@ fun MainScreenContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp),
-            contentAlignment = Alignment.BottomCenter
+                .padding(vertical = 16.dp, horizontal = 32.dp),
+            contentAlignment = Alignment.BottomEnd
         ) {
             AddButton {
                 showBottomSheet = true
                 Log.d("Add", "click")
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            IconButton({
-                onSettingsClick()
-            }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
-                    "settings icon",
-                    tint = MaterialTheme.colorScheme.tertiary
-                )
-            }
-        }
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(all = 16.dp),
+//            contentAlignment = Alignment.BottomEnd
+//        ) {
+//            IconButton({
+//                onSettingsClick()
+//            }) {
+//                Icon(
+//                    imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
+//                    "settings icon",
+//                    tint = MaterialTheme.colorScheme.tertiary
+//                )
+//            }
+//        }
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
@@ -199,7 +225,7 @@ fun AddButton(
 ) {
     Box(
         modifier = modifier
-            .size(85.dp)
+            .size(48.dp)
             .shadow(1.dp, RoundedCornerShape(50))
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.onTertiary)

@@ -3,6 +3,7 @@ package com.wem.snoozy.presentation.activity
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
         userPreferencesManager = UserPreferencesManager(this)
 
         setContent {
+
             val settingsViewModel: SettingsViewModel = viewModel(
                 factory = SettingsViewModelFactory(userPreferencesManager)
             )

@@ -7,10 +7,14 @@ sealed class Screen(
     object Home: Screen(ROUTE_HOME)
 
     object Settings: Screen(ROUTE_SETTINGS)
+    object Groups: Screen(ROUTE_GROUPS)
+    object Profile: Screen(ROUTE_PROFILE)
 
 
     companion object {
         const val ROUTE_HOME = "home"
         const val ROUTE_SETTINGS = "settings"
+        const val ROUTE_GROUPS = "groups"
+        const val ROUTE_PROFILE = "profile"
     }
 }
