@@ -82,7 +82,7 @@ fun BottomBarTabs(
 
     val navColorMain by animateColorAsState(
         targetValue = MaterialTheme.colorScheme.surface,
-        animationSpec = tween(300),
+        animationSpec = tween(0),
         label = "nav_color_main"
     )
 
@@ -90,13 +90,13 @@ fun BottomBarTabs(
         modifier = Modifier
             .shadow(1.dp, RoundedCornerShape(30))
             .clip(RoundedCornerShape(30))
-            .background(navColorMain)
+            .background(MaterialTheme.colorScheme.surface,)
             .fillMaxSize(),
     ) {
         for (tab in tabs) {
             val navColor by animateColorAsState(
                 targetValue = if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                animationSpec = tween(300),
+                animationSpec = tween(0),
                 label = "nav_color"
             )
             Box(
@@ -104,7 +104,7 @@ fun BottomBarTabs(
                     .fillMaxHeight()
                     .padding(horizontal = 8.dp, vertical = 6.dp)
                     .clip(RoundedCornerShape(26))
-                    .background(navColor)
+                    .background(if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                     .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
@@ -127,7 +127,7 @@ fun BottomBarTabs(
                     Text(
                         text = tab.title,
                         color = MaterialTheme.colorScheme.tertiary,
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
                         fontFamily = myTypeFamily,
                         fontWeight = FontWeight(900),
                         lineHeight = 2.sp

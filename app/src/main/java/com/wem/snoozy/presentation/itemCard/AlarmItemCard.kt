@@ -82,6 +82,9 @@ fun AlarmItemCard(
         ),
         shape = CircleShape.copy(CornerSize(20))
     ) {
+
+        val textTimeToBed =  if (alarmItem.timeToBed.isNotEmpty()) "Time to bed: " + alarmItem.timeToBed else ""
+
         Column(
             modifier = modifier
                 .padding(horizontal = 32.dp, vertical = 16.dp)
@@ -97,7 +100,7 @@ fun AlarmItemCard(
                     color = cardType
                 )
                 Text(
-                    text = "Time to bed: " + alarmItem.timeToBed,
+                    text = textTimeToBed,
                     fontSize = 20.sp,
                     fontFamily = myTypeFamily,
                     color = cardType

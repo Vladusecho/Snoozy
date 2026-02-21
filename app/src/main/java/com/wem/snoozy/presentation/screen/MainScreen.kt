@@ -96,7 +96,7 @@ fun MainScreen(
         bottomBar = {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 42.dp).padding(bottom = 80.dp)
+                    .padding(horizontal = 24.dp).padding(bottom = 60.dp)
                     .fillMaxWidth()
                     .height(64.dp)
             ) {
@@ -164,7 +164,7 @@ fun MainScreenContent(
             }
         )
         BottomGradientShadow(
-            shadowHeight = 260.dp
+            shadowHeight = 160.dp
         )
         Box(
             modifier = Modifier
