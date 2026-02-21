@@ -9,18 +9,37 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = CoralRed,
+    secondary = DarkGray,
+    onPrimary = White,
+    onSecondary = SilverMist,
+    tertiary = White,
+    onBackground = Lime,
+    onTertiary = CoralRed,
+    onTertiaryContainer = White,
+    surface = AnthraciteGray,
+    onSurface = StoneGray,
+    onSurfaceVariant = CoralRed
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = AntiqueWhite, // alarm on
+    secondary = LightGray, // alarm off
+    onPrimary = TaupeGray, // alarm text on
+    onSecondary = AntiqueWhite, // alarm text off
+    tertiary = LightBlack, // alarm time text
+    onBackground = Lime, // apply button
+    onTertiary = White, // add button
+    onTertiaryContainer = LightBlack, // add button plus
+    surface = White, // bottom sheet background
+    onSurface = GraphiteGray, // element's background in bottom sheet
+    onSurfaceVariant = Lime, // checked cycle
+
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -37,7 +56,7 @@ private val LightColorScheme = lightColorScheme(
 fun SnoozyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

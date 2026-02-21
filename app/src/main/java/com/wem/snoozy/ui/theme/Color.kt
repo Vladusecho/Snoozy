@@ -2,10 +2,34 @@ package com.wem.snoozy.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Cyan = Color(0xFFDAC4F7)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val TaupeGray = Color(0xff4A4947)
+
+val AntiqueWhite = Color(0xffDEE2E6)
+
+val GraphiteGray = Color(0xffDEE2E6)
+
+val DarkBlue = Color(0xff222831)
+
+val SilverGray = Color(0xffA7A9AD)
+
+val SilverMist = Color(0xffB7B7B7)
+
+val LightBlack = Color(0xff4A4947)
+
+val Lime = Color(0xffAAFFBD)
+
+val LightGray = Color(0xffEFF1F3)
+
+//Dark Theme
+
+val CoralRed = Color(0xffEC625F)
+
+val DarkGray = Color(0xff4B4B4B)
+
+val White = Color(0xffffffff)
+
+val AnthraciteGray = Color(0xff313131)
+
+val StoneGray = Color(0xff525252)
