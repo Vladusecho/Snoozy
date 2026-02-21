@@ -107,6 +107,9 @@ class MainViewModel(
             }
             newList
         }
+        selectedCycleId.update {
+            DEFAULT_VALUE
+        }
         Log.d("myreset", days.value.toString())
     }
 
@@ -117,7 +120,7 @@ class MainViewModel(
 
         val newItems = mutableListOf<CycleItem>()
 
-        for (i in 1..7) {
+        for (i in FIRST_CYCLE..LAST_CYCLE) {
             val minusMinutes = selectedTime.minusMinutes(cycleLength.value!!.toLong()).minusMinutes(sleepStartTime.value!!.toLong())
             val hours = minusMinutes.hour.toString()
             val minutes = minusMinutes.minute.toString().padStart(2, '0')
@@ -145,5 +148,13 @@ class MainViewModel(
         viewModelScope.launch {
             deleteAlarmUseCase(alarmId)
         }
+    }
+
+    companion object {
+
+        const val DEFAULT_VALUE = -1
+
+        const val FIRST_CYCLE = 1
+        const val LAST_CYCLE = 7
     }
 }
