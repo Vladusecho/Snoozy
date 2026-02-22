@@ -57,6 +57,11 @@ fun SettingsScreen(
     val state = viewModel.state.collectAsState()
     val currentState = state.value
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.processCommand(SettingsCommand.SaveSettings)
+        }
+    }
 
     when (currentState) {
         is SettingsState.Content -> {

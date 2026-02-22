@@ -30,8 +30,16 @@ class SettingsViewModel(
                 _state.update { prevState ->
                     if (prevState is SettingsState.Content) {
                         prevState.copy(cycleLength = command.newValue).also {
+                            var newValue = command.newValue
+                            if (newValue.isNotEmpty()) {
+                                if (newValue.first() == '-') {
+                                    newValue = "0"
+                                } else if (newValue.toInt() > 150) {
+                                    newValue = "150"
+                                }
+                            }
                             viewModelScope.launch {
-                                userPreferencesManager.saveCycleLength(command.newValue)
+                                userPreferencesManager.saveCycleLength(newValue)
                             }
                         }
                     } else {
@@ -44,8 +52,16 @@ class SettingsViewModel(
                 _state.update { prevState ->
                     if (prevState is SettingsState.Content) {
                         prevState.copy(sleepStartTime = command.newValue).also {
+                            var newValue = command.newValue
+                            if (newValue.isNotEmpty()) {
+                                if (newValue.first() == '-') {
+                                    newValue = "0"
+                                } else if (newValue.toInt() > 60) {
+                                    newValue = "60"
+                                }
+                            }
                             viewModelScope.launch {
-                                userPreferencesManager.saveSleepStartTime(command.newValue)
+                                userPreferencesManager.saveSleepStartTime(newValue)
                             }
                         }
                     } else {
@@ -65,6 +81,22 @@ class SettingsViewModel(
                         }
                     } else {
                         previousState
+                    }
+                }
+            }
+
+            SettingsCommand.SaveSettings -> {
+                viewModelScope.launch {
+                    val currentState = _state.value
+                    if (currentState is SettingsState.Content) {
+                        val cycleLength = currentState.cycleLength
+                        val sleepStartTime = currentState.sleepStartTime
+                        if (cycleLength.isEmpty()) {
+                            userPreferencesManager.saveCycleLength("90")
+                        }
+                        if (sleepStartTime.isEmpty()) {
+                            userPreferencesManager.saveSleepStartTime("0")
+                        }
                     }
                 }
             }
@@ -120,5 +152,7 @@ sealed interface SettingsCommand {
     data class ToggleTheme(
         val isDarkTheme: Boolean
     ) : SettingsCommand
+
+    data object SaveSettings : SettingsCommand
 
 }
