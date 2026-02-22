@@ -22,8 +22,6 @@ class SettingsViewModel(
 
     val themeState = MutableStateFlow(false)
 
-    private val repository = AlarmRepositoryImpl()
-
     fun processCommand(command: SettingsCommand) {
         when (command) {
             is SettingsCommand.InputCycleLength -> {
