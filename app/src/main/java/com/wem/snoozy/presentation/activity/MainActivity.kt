@@ -2,6 +2,7 @@ package com.wem.snoozy.presentation.activity
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -14,6 +15,7 @@ import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.presentation.screen.MainScreen
 import com.wem.snoozy.presentation.viewModel.MainViewModel
 import com.wem.snoozy.presentation.viewModel.MainViewModelFactory
+import com.wem.snoozy.presentation.viewModel.SettingsState
 import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 import com.wem.snoozy.presentation.viewModel.SettingsViewModelFactory
 import com.wem.snoozy.ui.theme.SnoozyTheme
@@ -38,10 +40,10 @@ class MainActivity : ComponentActivity() {
                 factory = MainViewModelFactory(userPreferencesManager)
             )
 
-            val uiState by settingsViewModel.uiState.collectAsState()
+            val themeState by settingsViewModel.themeState.collectAsState()
 
             SnoozyTheme(
-                darkTheme = uiState.isDarkTheme
+                darkTheme = themeState
             ) {
                 MainScreen(
                     mainViewModel,

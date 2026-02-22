@@ -40,34 +40,34 @@ class UserPreferencesManager(
         }
 
     suspend fun saveSleepStartTime(time: String) {
-        var newTime = time
-        if (!newTime.isDigitsOnly()) {
-            newTime = "0"
-        } else {
-            if (newTime.toInt() < 0) {
-                newTime = "0"
-            } else if (newTime.toInt() > 60) {
-                newTime = "60"
-            }
-        }
+//        var newTime = time
+//        if (!newTime.isDigitsOnly()) {
+//            newTime = "0"
+//        } else {
+//            if (newTime.toInt() < 0) {
+//                newTime = "0"
+//            } else if (newTime.toInt() > 60) {
+//                newTime = "60"
+//            }
+//        }
         context.dataStore.edit { preferences ->
-            preferences[SLEEP_START_TIME] = newTime
+            preferences[SLEEP_START_TIME] = time
         }
     }
 
     suspend fun saveCycleLength(value: String) {
-        var newValue = value
-        if (!newValue.isDigitsOnly()) {
-            newValue = "90"
-        } else {
-            if (newValue.toInt() < 50) {
-                newValue = "50"
-            } else if (newValue.toInt() > 150) {
-                newValue = "150"
-            }
-        }
+//        var newValue = value
+//        if (!newValue.isDigitsOnly()) {
+//            newValue = "90"
+//        } else {
+//            if (newValue.toInt() < 50) {
+//                newValue = "50"
+//            } else if (newValue.toInt() > 150) {
+//                newValue = "150"
+//            }
+//        }
         context.dataStore.edit { preferences ->
-            preferences[CYCLE_LENGTH] = newValue
+            preferences[CYCLE_LENGTH] = value
         }
     }
 

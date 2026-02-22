@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wem.snoozy.data.local.UserPreferencesManager
+import com.wem.snoozy.data.repository.AlarmRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -14,75 +17,108 @@ class SettingsViewModel(
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
-    data class UiState(
-        val cycleLength: String = "90",
-        val sleepStartTime: String = "0",
-        val isDarkTheme: Boolean = true,
-    )
+    private val _state = MutableStateFlow<SettingsState>(SettingsState.Initial)
+    val state = _state.asStateFlow()
 
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    val themeState = MutableStateFlow(false)
+
+    private val repository = AlarmRepositoryImpl()
+
+    fun processCommand(command: SettingsCommand) {
+        when (command) {
+            is SettingsCommand.InputCycleLength -> {
+                _state.update { prevState ->
+                    if (prevState is SettingsState.Content) {
+                        prevState.copy(cycleLength = command.newValue).also {
+                            viewModelScope.launch {
+                                userPreferencesManager.saveCycleLength(command.newValue)
+                            }
+                        }
+                    } else {
+                        prevState
+                    }
+                }
+            }
+
+            is SettingsCommand.InputSleepStartTime -> {
+                _state.update { prevState ->
+                    if (prevState is SettingsState.Content) {
+                        prevState.copy(sleepStartTime = command.newValue).also {
+                            viewModelScope.launch {
+                                userPreferencesManager.saveSleepStartTime(command.newValue)
+                            }
+                        }
+                    } else {
+                        prevState
+                    }
+                }
+            }
+
+            is SettingsCommand.ToggleTheme -> {
+                _state.update { previousState ->
+                    if (previousState is SettingsState.Content) {
+                        previousState.copy(isDarkTheme = command.isDarkTheme).also {
+                            themeState.value = command.isDarkTheme
+                            viewModelScope.launch {
+                                userPreferencesManager.saveTheme(command.isDarkTheme)
+                            }
+                        }
+                    } else {
+                        previousState
+                    }
+                }
+            }
+        }
+    }
+
 
     init {
-        loadUserPreferences()
+        observePreferences()
     }
 
-    private fun loadUserPreferences() {
-        viewModelScope.launch {
-            userPreferencesManager.darkThemeFlow.collect { theme ->
-                Log.d("mysett", theme.toString())
-                _uiState.update { it.copy(isDarkTheme = theme) }
-            }
-        }
-        viewModelScope.launch {
-            userPreferencesManager.cycleLengthFlow.collect { value ->
-                _uiState.update { it.copy(
-                    cycleLength = value ?: ""
-                ) }
-            }
-        }
-        viewModelScope.launch {
-            userPreferencesManager.sleepStartTimeFlow.collect { time ->
-                _uiState.update { it.copy(
-                    sleepStartTime = time ?: ""
-                ) }
-            }
-        }
-    }
+    private fun observePreferences() {
+        combine(
+            userPreferencesManager.darkThemeFlow,
+            userPreferencesManager.cycleLengthFlow,
+            userPreferencesManager.sleepStartTimeFlow
+        ) { theme, cycleLength, sleepStartTime ->
 
-    fun updateSleepStartTime(time: String) {
-        viewModelScope.launch {
-            userPreferencesManager.saveSleepStartTime(time)
-        }
-    }
+            themeState.value = theme
 
-    fun updateCycleLength(value: String) {
-        viewModelScope.launch {
-            userPreferencesManager.saveCycleLength(value)
-        }
+            SettingsState.Content(
+                cycleLength = cycleLength ?: "",
+                sleepStartTime = sleepStartTime ?: "",
+                isDarkTheme = theme
+            )
+        }.onEach { settingsState ->
+            _state.value = settingsState
+        }.launchIn(viewModelScope)
     }
+}
 
-    fun updateDarkTheme(isDark: Boolean) {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(isDarkTheme = isDark)
-            }
-            userPreferencesManager.saveTheme(isDark)
-        }
-    }
+sealed interface SettingsState {
 
-    fun resetSleepStartTime() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(sleepStartTime = "0")
-            }
-            userPreferencesManager.saveSleepStartTime("0")
-        }
-    }
+    data object Initial : SettingsState
 
-    fun clearPreferences() {
-        viewModelScope.launch {
-            userPreferencesManager.clearAll()
-        }
-    }
+    data class Content(
+        val cycleLength: String,
+        val sleepStartTime: String,
+        val isDarkTheme: Boolean
+    ) : SettingsState
+}
+
+sealed interface SettingsCommand {
+
+    data class InputCycleLength(
+        val newValue: String
+    ) : SettingsCommand
+
+    data class InputSleepStartTime(
+        val newValue: String
+    ) : SettingsCommand
+
+    data class ToggleTheme(
+        val isDarkTheme: Boolean
+    ) : SettingsCommand
+
 }
