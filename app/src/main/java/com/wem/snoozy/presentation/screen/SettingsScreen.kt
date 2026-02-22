@@ -18,16 +18,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +51,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel
 ) {
 
+    // TODO: ПРИ ВЫХОДЕ ИЗ ПРИЛОЖЕНИЯ В НАСТРОЙКАХ С ПУСТЫМИ ПАРАМЕТРАМИ ОНИ ОСТАНУТСЯ ПУСТЫМИ ПРИ СЛЕД. ЗАХОДЕ
+
     val state = viewModel.state.collectAsState()
     val currentState = state.value
 
@@ -65,62 +64,55 @@ fun SettingsScreen(
 
     when (currentState) {
         is SettingsState.Content -> {
-            Scaffold(
-                topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                "Settings",
-                                fontSize = 25.sp,
-                                fontFamily = myTypeFamily,
-                                fontWeight = FontWeight(700),
-                                color = MaterialTheme.colorScheme.tertiary,
-                            )
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors().copy(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
-                    )
-                }
-            ) { paddingValues ->
-                Column(
-                    modifier = Modifier.padding(paddingValues)
+            Column(
+                modifier = Modifier.padding(top = 48.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    SettingsName(
-                        name = "APP THEME",
-                        imageVector = Icons.Outlined.DarkMode,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ThemeSettingsBlock(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp),
-                        isDarkTheme = currentState.isDarkTheme
-                    ) {
-                        viewModel.processCommand(SettingsCommand.ToggleTheme(it))
-                    }
-                    Spacer(modifier = Modifier.height(32.dp))
-                    SettingsName(
-                        name = "ALARM SETTINGS",
-                        imageVector = Icons.Outlined.Alarm,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AlarmSettingsBlock(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp),
-                        cycleLength = currentState.cycleLength,
-                        sleepStartTime = currentState.sleepStartTime,
-                        onCycleLengthInput = {
-                            viewModel.processCommand(SettingsCommand.InputCycleLength(it))
-                        },
-                        onSleepStartTimeInput = {
-                            viewModel.processCommand(SettingsCommand.InputSleepStartTime(it))
-                        }
+                    Text(
+                        "Settings",
+                        fontSize = 25.sp,
+                        fontFamily = myTypeFamily,
+                        fontWeight = FontWeight(700),
+                        color = MaterialTheme.colorScheme.tertiary,
                     )
                 }
+                SettingsName(
+                    name = "APP THEME",
+                    imageVector = Icons.Outlined.DarkMode,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ThemeSettingsBlock(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                    isDarkTheme = currentState.isDarkTheme
+                ) {
+                    viewModel.processCommand(SettingsCommand.ToggleTheme(it))
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                SettingsName(
+                    name = "ALARM SETTINGS",
+                    imageVector = Icons.Outlined.Alarm,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                AlarmSettingsBlock(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                    cycleLength = currentState.cycleLength,
+                    sleepStartTime = currentState.sleepStartTime,
+                    onCycleLengthInput = {
+                        viewModel.processCommand(SettingsCommand.InputCycleLength(it))
+                    },
+                    onSleepStartTimeInput = {
+                        viewModel.processCommand(SettingsCommand.InputSleepStartTime(it))
+                    }
+                )
             }
         }
 
@@ -237,7 +229,7 @@ fun AlarmSettingsBlock(
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     BasicTextField(
                         cursorBrush = Brush.verticalGradient(
                             listOf(
@@ -315,7 +307,7 @@ fun AlarmSettingsBlock(
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     BasicTextField(
                         cursorBrush = Brush.verticalGradient(
                             listOf(

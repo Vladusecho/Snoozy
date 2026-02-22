@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,15 +28,15 @@ class SettingsViewModel(
             is SettingsCommand.InputCycleLength -> {
                 _state.update { prevState ->
                     if (prevState is SettingsState.Content) {
-                        prevState.copy(cycleLength = command.newValue).also {
-                            var newValue = command.newValue
-                            if (newValue.isNotEmpty()) {
-                                if (newValue.first() == '-') {
-                                    newValue = "0"
-                                } else if (newValue.toInt() > 150) {
-                                    newValue = "150"
-                                }
+                        var newValue = command.newValue
+                        if (newValue.isNotEmpty()) {
+                            if (!(newValue.all { it in '0'..'9' })) {
+                                newValue = "0"
+                            } else if (newValue.toInt() > 150) {
+                                newValue = "150"
                             }
+                        }
+                        prevState.copy(cycleLength = newValue).also {
                             viewModelScope.launch {
                                 userPreferencesManager.saveCycleLength(newValue)
                             }
@@ -49,15 +50,15 @@ class SettingsViewModel(
             is SettingsCommand.InputSleepStartTime -> {
                 _state.update { prevState ->
                     if (prevState is SettingsState.Content) {
-                        prevState.copy(sleepStartTime = command.newValue).also {
-                            var newValue = command.newValue
-                            if (newValue.isNotEmpty()) {
-                                if (newValue.first() == '-') {
-                                    newValue = "0"
-                                } else if (newValue.toInt() > 60) {
-                                    newValue = "60"
-                                }
+                        var newValue = command.newValue
+                        if (newValue.isNotEmpty()) {
+                            if (!(newValue.all { it in '0'..'9' })) {
+                                newValue = "0"
+                            } else if (newValue.toInt() > 60) {
+                                newValue = "60"
                             }
+                        }
+                        prevState.copy(sleepStartTime = newValue).also {
                             viewModelScope.launch {
                                 userPreferencesManager.saveSleepStartTime(newValue)
                             }
@@ -116,8 +117,8 @@ class SettingsViewModel(
             themeState.value = theme
 
             SettingsState.Content(
-                cycleLength = cycleLength ?: "",
-                sleepStartTime = sleepStartTime ?: "",
+                cycleLength = cycleLength ?: "90",
+                sleepStartTime = sleepStartTime ?: "0",
                 isDarkTheme = theme
             )
         }.onEach { settingsState ->
