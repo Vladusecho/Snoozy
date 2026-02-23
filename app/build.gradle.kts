@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.network)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.compose.animation)
     ksp(libs.room.compiler)
     implementation(libs.room.core)
     implementation(libs.compose.navigation)

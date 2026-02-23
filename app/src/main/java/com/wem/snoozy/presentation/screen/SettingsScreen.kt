@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -34,12 +35,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.viewModel.SettingsCommand
 import com.wem.snoozy.presentation.viewModel.SettingsState
@@ -48,7 +52,10 @@ import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel
+    context: Context = LocalContext.current.applicationContext,
+    viewModel: SettingsViewModel = viewModel {
+        SettingsViewModel(UserPreferencesManager(context))
+    }
 ) {
 
     // TODO: ПРИ ВЫХОДЕ ИЗ ПРИЛОЖЕНИЯ В НАСТРОЙКАХ С ПУСТЫМИ ПАРАМЕТРАМИ ОНИ ОСТАНУТСЯ ПУСТЫМИ ПРИ СЛЕД. ЗАХОДЕ

@@ -17,6 +17,7 @@ navigation_version = "2.9.7"
 room = "2.8.4"
 ksp = "2.1.20-1.0.31"
 coil_version = "3.3.0"
+animation = "1.10.3"
 
 
 [libraries]
@@ -45,6 +46,7 @@ viewmodels = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", versio
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp" , version.ref = "ksp"}

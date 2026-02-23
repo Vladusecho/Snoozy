@@ -1,5 +1,10 @@
-package com.wem.snoozy.domain.navigation
+package com.wem.snoozy.presentation.navigation
 
+/**
+ * Screen object
+ *
+ * @param route Screen's route for navigation
+ */
 sealed class Screen(
     val route: String
 ) {

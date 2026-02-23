@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -32,17 +33,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,22 +50,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.wem.snoozy.R
+import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.domain.entity.AlarmItem
-import com.wem.snoozy.domain.navigation.AppNavGraph
-import com.wem.snoozy.domain.navigation.BottomBarTabs
-import com.wem.snoozy.domain.navigation.Screen
-import com.wem.snoozy.domain.navigation.rememberNavState
-import com.wem.snoozy.domain.navigation.tabs
 import com.wem.snoozy.presentation.itemCard.CycleItemCard
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.utils.DatePickerDialog
@@ -75,7 +66,6 @@ import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.MainViewModel
-import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.random.Random
@@ -84,62 +74,10 @@ import kotlin.random.Random
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    mainViewModel: MainViewModel,
-    settingsViewModel: SettingsViewModel
-) {
-
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    val navState = rememberNavState()
-
-    Scaffold(
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp).padding(bottom = 60.dp)
-                    .fillMaxWidth()
-                    .height(64.dp)
-            ) {
-                BottomBarTabs(
-                    tabs,
-                    selectedTab = selectedTabIndex,
-                    onTabSelected = {
-                        selectedTabIndex = tabs.indexOf(it)
-                        navState.navigateTo(it.screen.route)
-                    }
-                )
-            }
-        }
-    ) { paddingValues ->
-        AppNavGraph(
-            navState.navHostController,
-            settingsScreenContent = {
-                SettingsScreen(
-                    viewModel = settingsViewModel
-                )
-            },
-            homeScreenContent = {
-                MainScreenContent(
-                    paddingValues = paddingValues,
-                    viewModel = mainViewModel
-                )
-            },
-            profileScreenContent = {
-                ProfileScreen()
-            },
-            groupsScreenContent = {
-                GroupsScreen()
-            }
-        )
+    context: Context = LocalContext.current.applicationContext,
+    viewModel: MainViewModel = viewModel {
+        MainViewModel(UserPreferencesManager(context))
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainScreenContent(
-    paddingValues: PaddingValues,
-    viewModel: MainViewModel
 ) {
 
     val sheetState = rememberModalBottomSheetState(
@@ -150,7 +88,6 @@ fun MainScreenContent(
 
     Box(
         modifier = Modifier
-            .padding(paddingValues)
             .background(MaterialTheme.colorScheme.background)
             .padding(top = 16.dp)
     ) {
