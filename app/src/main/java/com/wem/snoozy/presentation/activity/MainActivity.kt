@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
@@ -21,14 +22,12 @@ import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.presentation.navigation.AppNavGraph
 import com.wem.snoozy.presentation.navigation.BottomBarTabs
 import com.wem.snoozy.presentation.viewModel.SettingsViewModel
-import com.wem.snoozy.presentation.viewModel.SettingsViewModelFactory
 import com.wem.snoozy.ui.theme.SnoozyTheme
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var userPreferencesManager: UserPreferencesManager
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,9 +36,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val settingsViewModel: SettingsViewModel = viewModel(
-                factory = SettingsViewModelFactory(userPreferencesManager)
-            )
+            val context = LocalContext.current.applicationContext
+
+            val settingsViewModel: SettingsViewModel = viewModel {
+                SettingsViewModel(UserPreferencesManager(context))
+            }
 
             val themeState by settingsViewModel.themeState.collectAsState()
 

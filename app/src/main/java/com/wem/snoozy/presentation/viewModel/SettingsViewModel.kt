@@ -1,23 +1,26 @@
 package com.wem.snoozy.presentation.viewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wem.snoozy.data.local.UserPreferencesManager
-import com.wem.snoozy.data.repository.AlarmRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ *  ViewModel for settings screen
+ *
+ *  @param userPreferencesManager manager for working with local storage
+ */
 class SettingsViewModel(
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
+    // Settings screen state
     private val _state = MutableStateFlow<SettingsState>(SettingsState.Initial)
     val state = _state.asStateFlow()
 

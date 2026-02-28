@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wem.snoozy.presentation.screen.BottomSheetContent
 import com.wem.snoozy.presentation.screen.GroupsScreen
 import com.wem.snoozy.presentation.screen.MainScreen
 import com.wem.snoozy.presentation.screen.ProfileScreen
@@ -25,7 +26,6 @@ import com.wem.snoozy.presentation.screen.SettingsScreen
  *
  * @param navController Controller for navigation
  */
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(
     navController: NavHostController
@@ -35,28 +35,10 @@ fun AppNavGraph(
         navController = navController,
         startDestination = Screen.Home.route,
         enterTransition = {
-            scaleIn(
-                initialScale = 0.95f,
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(350))
+            fadeIn(animationSpec = tween(durationMillis = 0))
         },
         exitTransition = {
-            scaleOut(
-                targetScale = 0.95f,
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(250))
-        },
-        popEnterTransition = {
-            scaleIn(
-                initialScale = 0.95f,
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(350))
-        },
-        popExitTransition = {
-            scaleOut(
-                targetScale = 0.95f,
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(250))
+            fadeOut(animationSpec = tween(durationMillis = 0))
         }
     ) {
 
@@ -71,6 +53,9 @@ fun AppNavGraph(
         }
         composable(Screen.Profile.route) {
             ProfileScreen()
+        }
+        composable(Screen.AddAlarm.route) {
+            BottomSheetContent {  }
         }
     }
 

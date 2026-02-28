@@ -4,15 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.wem.snoozy.data.local.UserPreferencesManager
 
-class MainViewModelFactory(
+class AddAlarmViewModelFactory(
     private val userPreferencesManager: UserPreferencesManager
-) : ViewModelProvider.Factory {
+) : ViewModelProvider.Factory{
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(AddAlarmViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MainViewModel(userPreferencesManager) as T
+            return AddAlarmViewModel(
+                userPreferencesManager = userPreferencesManager
+            ) as T
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }
