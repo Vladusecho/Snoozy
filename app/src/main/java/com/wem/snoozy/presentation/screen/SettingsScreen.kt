@@ -73,7 +73,7 @@ fun SettingsScreen(
     when (currentState) {
         is SettingsState.Content -> {
             Column(
-                modifier = Modifier.padding(top = 48.dp)
+                modifier = Modifier.padding(top = 16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),

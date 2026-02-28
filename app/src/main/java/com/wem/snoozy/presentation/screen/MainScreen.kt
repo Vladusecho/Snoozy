@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -27,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,11 +40,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,11 +59,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -100,7 +108,6 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 16.dp)
     ) {
         when (currentState) {
             MainState.Initial -> {
@@ -141,15 +148,14 @@ fun MainScreen(
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
-//                    addAlarmViewModel.processCommand(AddAlarmCommand.ResetAddSheet)
                 },
                 sheetState = sheetState,
                 dragHandle = {
                     Box(modifier = Modifier.height(0.dp))
                 },
                 sheetGesturesEnabled = false,
-                containerColor = MaterialTheme.colorScheme.surface,
-                scrimColor = Color.Black.copy(.85f)
+                containerColor = MaterialTheme.colorScheme.background,
+                scrimColor = Color.Black.copy(.85f),
             ) {
                 BottomSheetContent {
                     showBottomSheet = false
@@ -219,7 +225,8 @@ fun AlarmsList(
     onToggleAlarm: (AlarmItem) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier
+        modifier = modifier,
+        contentPadding = PaddingValues(top = 16.dp)
     ) {
         items(
             alarms,

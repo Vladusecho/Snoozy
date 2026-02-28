@@ -15,8 +15,6 @@ class UserPreferencesManager(
     private val context: Context
 ) {
 
-    private val appContext = context.applicationContext
-
     companion object {
 
         val SLEEP_START_TIME = stringPreferencesKey("sleep_start_time")

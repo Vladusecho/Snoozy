@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.activity
 
+import android.app.Activity
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,11 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsAnimationCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.wem.snoozy.data.local.UserPreferencesManager
@@ -47,6 +53,18 @@ class MainActivity : ComponentActivity() {
             SnoozyTheme(
                 darkTheme = themeState
             ) {
+                val window = (LocalView.current.context as Activity).window
+                if (!themeState) {
+                    SideEffect {
+                        val controller = WindowInsetsControllerCompat(window, window.decorView)
+                        controller.isAppearanceLightStatusBars = true
+                    }
+                } else {
+                    SideEffect {
+                        val controller = WindowInsetsControllerCompat(window, window.decorView)
+                        controller.isAppearanceLightStatusBars = false
+                    }
+                }
 
                 val navController = rememberNavController()
 
