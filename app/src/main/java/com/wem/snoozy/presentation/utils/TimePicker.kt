@@ -27,12 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerDialog(
     onDismiss: () -> Unit,
-    onConfirm: (Int, Int) -> Unit,
+    onConfirm: (LocalTime) -> Unit,
     onCancelClick: () -> Unit
 ) {
     val timePickerState = rememberTimePickerState()
@@ -90,8 +91,7 @@ fun TimePickerDialog(
                     Button(
                         onClick = {
                             onConfirm(
-                                timePickerState.hour,
-                                timePickerState.minute
+                                LocalTime.of(timePickerState.hour, timePickerState.minute)
                             )
                         },
                         colors = ButtonDefaults.buttonColors().copy(

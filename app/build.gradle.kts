@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.wem.snoozy"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.network)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.compose.animation)
     ksp(libs.room.compiler)
     implementation(libs.room.core)
     implementation(libs.compose.navigation)

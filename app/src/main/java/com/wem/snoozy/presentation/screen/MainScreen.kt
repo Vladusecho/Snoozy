@@ -1,5 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -30,19 +31,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,152 +52,96 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.wem.snoozy.R
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.domain.entity.AlarmItem
-import com.wem.snoozy.domain.navigation.AppNavGraph
-import com.wem.snoozy.domain.navigation.BottomBarTabs
-import com.wem.snoozy.domain.navigation.Screen
-import com.wem.snoozy.domain.navigation.rememberNavState
-import com.wem.snoozy.domain.navigation.tabs
+import com.wem.snoozy.domain.entity.CycleItem
 import com.wem.snoozy.presentation.itemCard.CycleItemCard
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 import com.wem.snoozy.presentation.utils.DatePickerDialog
 import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
+import com.wem.snoozy.presentation.viewModel.AddAlarmCommand
+import com.wem.snoozy.presentation.viewModel.AddAlarmState
+import com.wem.snoozy.presentation.viewModel.AddAlarmViewModel
+import com.wem.snoozy.presentation.viewModel.AddAlarmViewModelFactory
+import com.wem.snoozy.presentation.viewModel.MainCommand
+import com.wem.snoozy.presentation.viewModel.MainState
 import com.wem.snoozy.presentation.viewModel.MainViewModel
 import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.random.Random
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    mainViewModel: MainViewModel,
-    settingsViewModel: SettingsViewModel
+    viewModel: MainViewModel = viewModel()
 ) {
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    val navState = rememberNavState()
-
-    Scaffold(
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp).padding(bottom = 60.dp)
-                    .fillMaxWidth()
-                    .height(64.dp)
-            ) {
-                BottomBarTabs(
-                    tabs,
-                    selectedTab = selectedTabIndex,
-                    onTabSelected = {
-                        selectedTabIndex = tabs.indexOf(it)
-                        navState.navigateTo(it.screen.route)
-                    }
-                )
-            }
-        }
-    ) { paddingValues ->
-        AppNavGraph(
-            navState.navHostController,
-            settingsScreenContent = {
-                SettingsScreen(
-                    viewModel = settingsViewModel
-                )
-            },
-            homeScreenContent = {
-                MainScreenContent(
-                    paddingValues = paddingValues,
-                    viewModel = mainViewModel
-                )
-            },
-            profileScreenContent = {
-                ProfileScreen()
-            },
-            groupsScreenContent = {
-                GroupsScreen()
-            }
-        )
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainScreenContent(
-    paddingValues: PaddingValues,
-    viewModel: MainViewModel
-) {
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
     var showBottomSheet by remember { mutableStateOf(false) }
-    val alarms = viewModel.alarms.collectAsState()
+
+    val state = viewModel.state.collectAsState()
+    val currentState = state.value
 
     Box(
         modifier = Modifier
-            .padding(paddingValues)
             .background(MaterialTheme.colorScheme.background)
             .padding(top = 16.dp)
     ) {
-        AlarmsList(
-            alarms = alarms.value,
-            onDeleteSwipe = { alarmId ->
-                viewModel.swipeToDelete(alarmId)
-            },
-            onToggleAlarm = { alarmItem ->
-                viewModel.toggleAlarm(alarmItem)
+        when (currentState) {
+            MainState.Initial -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
-        )
-        BottomGradientShadow(
-            shadowHeight = 160.dp
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 16.dp, horizontal = 32.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            AddButton {
-                showBottomSheet = true
-                Log.d("Add", "click")
+
+            is MainState.Content -> {
+                AlarmsList(
+                    alarms = currentState.alarmList,
+                    onDeleteSwipe = { alarmId ->
+                        viewModel.processCommand(MainCommand.DeleteAlarm(alarmId))
+                    },
+                    onToggleAlarm = { alarmItem ->
+                        viewModel.processCommand(MainCommand.SwitchAlarm(alarmItem))
+                    }
+                )
+                BottomGradientShadow(
+                    shadowHeight = 160.dp
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 16.dp, horizontal = 32.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    AddButton {
+                        showBottomSheet = true
+                    }
+                }
             }
         }
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(all = 16.dp),
-//            contentAlignment = Alignment.BottomEnd
-//        ) {
-//            IconButton({
-//                onSettingsClick()
-//            }) {
-//                Icon(
-//                    imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
-//                    "settings icon",
-//                    tint = MaterialTheme.colorScheme.tertiary
-//                )
-//            }
-//        }
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
-                    viewModel.resetStates()
+//                    addAlarmViewModel.processCommand(AddAlarmCommand.ResetAddSheet)
                 },
                 sheetState = sheetState,
                 dragHandle = {
@@ -207,11 +151,8 @@ fun MainScreenContent(
                 containerColor = MaterialTheme.colorScheme.surface,
                 scrimColor = Color.Black.copy(.85f)
             ) {
-                BottomSheetContent(
-                    viewModel = viewModel
-                ) {
+                BottomSheetContent {
                     showBottomSheet = false
-                    viewModel.resetStates()
                 }
             }
         }
@@ -305,30 +246,51 @@ fun AlarmsList(
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetContent(
-    viewModel: MainViewModel,
     onCancelClick: () -> Unit
 ) {
 
+    val context = LocalContext.current.applicationContext
+
+    val viewModelStore = remember { ViewModelStore() }
+
+    val factory = remember(UserPreferencesManager(context)) {
+        AddAlarmViewModelFactory(
+            UserPreferencesManager(context)
+        )
+    }
+
+    val addAlarmViewModel: AddAlarmViewModel = remember(viewModelStore) {
+        ViewModelProvider(viewModelStore, factory)[AddAlarmViewModel::class.java]
+    }
+
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModelStore.clear()
+            Log.d("MainViewModel", "finished")
+        }
+    }
+
     var showTimePicker by remember { mutableStateOf(false) }
-    var selectedTime by remember { mutableStateOf(LocalTime.now()) }
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    val cycles = viewModel.cycles.collectAsState()
+    val selectedCycleId = addAlarmViewModel.selectedCycleId.collectAsState()
 
-    val selectedCycleId = viewModel.selectedCycleId.collectAsState()
+    val state = addAlarmViewModel.state.collectAsState()
+    val currentState = state.value
 
 
     if (showTimePicker) {
         TimePickerDialog(
-            onDismiss = { showTimePicker = false },
-            onConfirm = { hour, minute ->
-                selectedTime = LocalTime.of(hour, minute)
+            onDismiss = {
+                showTimePicker = false
+            },
+            onConfirm = { time ->
+                addAlarmViewModel.processCommand(AddAlarmCommand.SelectTime(time))
                 showTimePicker = false
             },
             onCancelClick = {
@@ -339,10 +301,10 @@ fun BottomSheetContent(
 
     if (showDatePicker) {
         DatePickerDialog(
-            initialDate = selectedDate,
+            initialDate = LocalDate.now(),
             onDismiss = { showDatePicker = false },
             onConfirm = { date ->
-                selectedDate = date
+                addAlarmViewModel.processCommand(AddAlarmCommand.SelectDate(date))
                 showDatePicker = false
             },
             onCancelClick = {
@@ -351,7 +313,6 @@ fun BottomSheetContent(
         )
     }
 
-    viewModel.applyCyclesList(selectedTime)
 
     Column(
         modifier = Modifier
@@ -359,40 +320,50 @@ fun BottomSheetContent(
             .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AlarmTime(
-            selectedTime = selectedTime,
-            onTimeClick = {
-                showTimePicker = true
+        when (currentState) {
+            AddAlarmState.Initial -> {
             }
-        )
-        CycleTable(
-            viewModel = viewModel
-        )
-        WeekDaysRow(
-            viewModel = viewModel
-        )
-        AlarmDate(
-            selectedDate = selectedDate,
-            onApplyDateClick = {
-                showDatePicker = true
-            }
-        )
-        BottomSheetCancelAndSave(
-            onSaveClick = {
-                val alarmItem = AlarmItem(
-                    id = Random.nextInt(0, 10000),
-                    ringDay = formatDateWithRelative(selectedDate),
-                    ringHours = selectedTime.hour.toString()
-                        .padStart(2, '0') + ":" + selectedTime.minute.toString()
-                        .padStart(2, '0'),
-                    timeToBed = if (selectedCycleId.value != -1) cycles.value.first().time else "",
-                    checked = true,
-                    repeatDays = ""
+
+            is AddAlarmState.Content -> {
+                AlarmTime(
+                    selectedTime = currentState.selectedTime,
+                    onTimeClick = {
+                        showTimePicker = true
+                    }
                 )
-                viewModel.addNewAlarm(alarmItem)
-            },
-            onCancelClick = onCancelClick
-        )
+                CycleTable(
+                    cycles = currentState.cyclesList,
+                    addAlarmViewModel = addAlarmViewModel
+                )
+                WeekDaysRow(
+                    viewModel = addAlarmViewModel
+                )
+                AlarmDate(
+                    selectedDate = currentState.selectedDate,
+                    onApplyDateClick = {
+                        showDatePicker = true
+                    }
+                )
+                BottomSheetCancelAndSave(
+                    onSaveClick = {
+                        addAlarmViewModel.processCommand(AddAlarmCommand.SaveAlarm(
+                            AlarmItem(
+                                id = 0,
+                                ringDay = formatDateWithRelative(currentState.selectedDate),
+                                ringHours = currentState.selectedTime.hour.toString()
+                                    .padStart(2, '0')
+                                        + ":" + currentState.selectedTime.minute.toString()
+                                    .padStart(2, '0'),
+                                timeToBed = if (selectedCycleId.value != -1) currentState.cyclesList.first().time else "",
+                                checked = true,
+                                repeatDays = ""
+                            )
+                        ))
+                    },
+                    onCancelClick = onCancelClick
+                )
+            }
+        }
     }
 }
 
@@ -442,7 +413,6 @@ fun BottomSheetCancelAndSave(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlarmDate(
     modifier: Modifier = Modifier,
@@ -492,7 +462,6 @@ fun AlarmDate(
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlarmTime(
     modifier: Modifier = Modifier,
@@ -560,10 +529,10 @@ fun TimeCard(
 @Composable
 fun WeekDaysRow(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel
+    viewModel: AddAlarmViewModel
 ) {
 
-    val daysState = viewModel.days.collectAsState()
+    val daysState = viewModel.daysList.collectAsState()
 
     LazyRow(
         modifier = modifier
@@ -602,18 +571,17 @@ fun WeekDaysRow(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CycleTable(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel
+    cycles: List<CycleItem>,
+    addAlarmViewModel: AddAlarmViewModel
 ) {
 
-    val cyclesListState = viewModel.cycles.collectAsState()
     val listState = rememberLazyListState()
 
-    LaunchedEffect(cyclesListState.value) {
-        if (cyclesListState.value.firstOrNull()?.checked == true) {
+    LaunchedEffect(cycles) {
+        if (cycles.firstOrNull()?.checked == true) {
             listState.animateScrollToItem(0)
         }
     }
@@ -630,13 +598,15 @@ fun CycleTable(
             state = listState
         ) {
             items(
-                cyclesListState.value,
+                cycles,
                 key = { it.id.toString() + it.time }
             ) {
                 Box(
                     modifier = Modifier.animateItem()
                 ) {
-                    CycleItemCard(it) { viewModel.toggleCycle(it.id) }
+                    CycleItemCard(it) {
+                        addAlarmViewModel.processCommand(AddAlarmCommand.SelectCycle(it.id))
+                    }
                 }
             }
         }

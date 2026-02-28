@@ -1,9 +1,7 @@
-package com.wem.snoozy.domain.navigation
+package com.wem.snoozy.presentation.navigation
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,14 +25,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.wem.snoozy.presentation.itemCard.myTypeFamily
 
+/** Navigation object
+ *
+ * @param screen Navigation object provide a unique screen
+ * @param icon Navigation object's icon
+ * @param title Navigation object's title
+ */
 sealed class MyNavItem(
     val screen: Screen,
     val icon: ImageVector,
@@ -66,55 +71,57 @@ sealed class MyNavItem(
     )
 }
 
-val tabs = listOf(
-    MyNavItem.Home,
-    MyNavItem.Groups,
-    MyNavItem.Profile,
-    MyNavItem.Settings,
-)
 
 @Composable
 fun BottomBarTabs(
-    tabs: List<MyNavItem>,
-    selectedTab: Int,
-    onTabSelected: (MyNavItem) -> Unit,
+    navController: NavController
 ) {
 
-    val navColorMain by animateColorAsState(
-        targetValue = MaterialTheme.colorScheme.surface,
-        animationSpec = tween(0),
-        label = "nav_color_main"
+    // list of all navigation objects
+    val tabs = listOf(
+        MyNavItem.Home,
+        MyNavItem.Groups,
+        MyNavItem.Profile,
+        MyNavItem.Settings,
     )
 
+    // navigation BackStack and current route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // bottom bar
     Row(
         modifier = Modifier
             .shadow(1.dp, RoundedCornerShape(30))
             .clip(RoundedCornerShape(30))
-            .background(MaterialTheme.colorScheme.surface,)
+            .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize(),
     ) {
         for (tab in tabs) {
-            val navColor by animateColorAsState(
-                targetValue = if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                animationSpec = tween(0),
-                label = "nav_color"
-            )
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(horizontal = 8.dp, vertical = 6.dp)
                     .clip(RoundedCornerShape(26))
-                    .background(if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                    .weight(1f),
+                    .weight(1f)
+                    // if current route == tab route -> checked background
+                    .background(if (currentRoute == tab.screen.route) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                    .clickable {
+                        navController.navigate(tab.screen.route) {
+                            // only one copy of screen we can use
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            // only one same screen at the top
+                            launchSingleTop = true
+                            // save screen state after another screen
+                            restoreState = true
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    modifier = Modifier
-                        .pointerInput(Unit) {
-                            detectTapGestures {
-                                onTabSelected(tab)
-                            }
-                        },
+                    modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
