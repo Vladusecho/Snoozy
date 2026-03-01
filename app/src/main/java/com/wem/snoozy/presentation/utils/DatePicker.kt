@@ -24,7 +24,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialog(
@@ -106,7 +105,6 @@ fun DatePickerDialog(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun formatDateWithRelative(date: LocalDate): String {
     val today = LocalDate.now()
     val formatter = DateTimeFormatter.ofPattern("MM.dd.yyyy").withLocale(Locale.ENGLISH)
@@ -116,5 +114,17 @@ fun formatDateWithRelative(date: LocalDate): String {
         today.plusDays(1) -> "Tomorrow"
         today.plusDays(2) -> "Next day"
         else -> date.format(formatter)
+    }
+}
+
+fun String.formatStringToDate(): LocalDate {
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("MM.dd.yyyy").withLocale(Locale.ENGLISH)
+
+    return when (this) {
+        "Today" -> today
+        "Tomorrow" -> today.plusDays(1)
+        "Next day" -> today.plusDays(2)
+        else -> LocalDate.parse(this, formatter)
     }
 }

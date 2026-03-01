@@ -1,9 +1,6 @@
 package com.wem.snoozy.presentation.screen
 
-import android.content.Context
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,14 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,13 +33,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,17 +50,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wem.snoozy.data.local.UserPreferencesManager
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.entity.CycleItem
@@ -80,29 +68,31 @@ import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.AddAlarmCommand
+import com.wem.snoozy.presentation.viewModel.AddAlarmCommand.*
 import com.wem.snoozy.presentation.viewModel.AddAlarmState
 import com.wem.snoozy.presentation.viewModel.AddAlarmViewModel
 import com.wem.snoozy.presentation.viewModel.AddAlarmViewModelFactory
 import com.wem.snoozy.presentation.viewModel.MainCommand
 import com.wem.snoozy.presentation.viewModel.MainState
 import com.wem.snoozy.presentation.viewModel.MainViewModel
-import com.wem.snoozy.presentation.viewModel.SettingsViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = viewModel()
+    mainViewModel: MainViewModel = viewModel(),
 ) {
-
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showBottomSheetAdd by remember { mutableStateOf(false) }
+    var showBottomSheetEdit by remember { mutableStateOf(false) }
 
-    val state = viewModel.state.collectAsState()
+    val editAlarm = remember { mutableStateOf(AlarmItem(0, "", "", "", false, "")) }
+
+    val state = mainViewModel.state.collectAsState()
     val currentState = state.value
 
     Box(
@@ -123,10 +113,14 @@ fun MainScreen(
                 AlarmsList(
                     alarms = currentState.alarmList,
                     onDeleteSwipe = { alarmId ->
-                        viewModel.processCommand(MainCommand.DeleteAlarm(alarmId))
+                        mainViewModel.processCommand(MainCommand.DeleteAlarm(alarmId))
                     },
                     onToggleAlarm = { alarmItem ->
-                        viewModel.processCommand(MainCommand.SwitchAlarm(alarmItem))
+                        mainViewModel.processCommand(MainCommand.SwitchAlarm(alarmItem))
+                    },
+                    onEditClick = { alarmItem ->
+                        editAlarm.value = alarmItem
+                        showBottomSheetEdit = true
                     }
                 )
                 BottomGradientShadow(
@@ -139,15 +133,15 @@ fun MainScreen(
                     contentAlignment = Alignment.BottomEnd
                 ) {
                     AddButton {
-                        showBottomSheet = true
+                        showBottomSheetAdd = true
                     }
                 }
             }
         }
-        if (showBottomSheet) {
+        if (showBottomSheetAdd) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheet = false
+                    showBottomSheetAdd = false
                 },
                 sheetState = sheetState,
                 dragHandle = {
@@ -157,8 +151,28 @@ fun MainScreen(
                 containerColor = MaterialTheme.colorScheme.background,
                 scrimColor = Color.Black.copy(.85f),
             ) {
-                BottomSheetContent {
-                    showBottomSheet = false
+                BottomSheetContentAdd {
+                    showBottomSheetAdd = false
+                }
+            }
+        }
+        if (showBottomSheetEdit) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheetEdit = false
+                },
+                sheetState = sheetState,
+                dragHandle = {
+                    Box(modifier = Modifier.height(0.dp))
+                },
+                sheetGesturesEnabled = false,
+                containerColor = MaterialTheme.colorScheme.background,
+                scrimColor = Color.Black.copy(.75f),
+            ) {
+                BottomSheetContentEdit(
+                    editAlarm.value
+                ) {
+                    showBottomSheetEdit = false
                 }
             }
         }
@@ -222,7 +236,8 @@ fun AlarmsList(
     modifier: Modifier = Modifier,
     alarms: List<AlarmItem>,
     onDeleteSwipe: (Int) -> Unit,
-    onToggleAlarm: (AlarmItem) -> Unit
+    onToggleAlarm: (AlarmItem) -> Unit,
+    onEditClick: (AlarmItem) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -238,7 +253,8 @@ fun AlarmsList(
                 SwipeToDeleteAlarmItem(
                     alarmItem = alarm,
                     onDelete = { onDeleteSwipe(alarm.id) },
-                    onToggle = { onToggleAlarm(alarm) }
+                    onToggle = { onToggleAlarm(alarm) },
+                    onEditClick = { onEditClick(alarm) }
                 )
             }
         }
@@ -255,7 +271,7 @@ fun AlarmsList(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(
+fun BottomSheetContentAdd(
     onCancelClick: () -> Unit
 ) {
 
@@ -353,23 +369,159 @@ fun BottomSheetContent(
                 )
                 BottomSheetCancelAndSave(
                     onSaveClick = {
-                        addAlarmViewModel.processCommand(AddAlarmCommand.SaveAlarm(
-                            AlarmItem(
-                                id = 0,
-                                ringDay = formatDateWithRelative(currentState.selectedDate),
-                                ringHours = currentState.selectedTime.hour.toString()
-                                    .padStart(2, '0')
-                                        + ":" + currentState.selectedTime.minute.toString()
-                                    .padStart(2, '0'),
-                                timeToBed = if (selectedCycleId.value != -1) currentState.cyclesList.first().time else "",
-                                checked = true,
-                                repeatDays = ""
+                        addAlarmViewModel.processCommand(
+                            SaveAlarm(
+                                AlarmItem(
+                                    id = 0,
+                                    ringDay = formatDateWithRelative(currentState.selectedDate),
+                                    ringHours = currentState.selectedTime.hour.toString()
+                                        .padStart(2, '0')
+                                            + ":" + currentState.selectedTime.minute.toString()
+                                        .padStart(2, '0'),
+                                    timeToBed = if (selectedCycleId.value != -1) currentState.cyclesList.first().time else "",
+                                    checked = true,
+                                    repeatDays = ""
+                                )
                             )
-                        ))
+                        )
                     },
                     onCancelClick = onCancelClick
                 )
             }
+
+            AddAlarmState.Loading -> {
+
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetContentEdit(
+    alarmItem: AlarmItem,
+    onCancelClick: () -> Unit
+) {
+
+    val context = LocalContext.current.applicationContext
+
+    val viewModelStore = remember { ViewModelStore() }
+
+    val factory = remember(Unit) {
+        AddAlarmViewModelFactory(
+            UserPreferencesManager(context)
+        )
+    }
+
+    val addAlarmViewModel: AddAlarmViewModel = remember(viewModelStore) {
+        ViewModelProvider(viewModelStore, factory)[AddAlarmViewModel::class.java]
+    }
+
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModelStore.clear()
+            Log.d("MainViewModel", "finished")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        addAlarmViewModel.processCommand(AddAlarmCommand.InitEditValues(alarmItem))
+    }
+
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val selectedCycleId = addAlarmViewModel.selectedCycleId.collectAsState()
+
+    val state = addAlarmViewModel.state.collectAsState()
+    val currentState = state.value
+
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            onDismiss = {
+                showTimePicker = false
+            },
+            onConfirm = { time ->
+                addAlarmViewModel.processCommand(AddAlarmCommand.SelectTime(time))
+                showTimePicker = false
+            },
+            onCancelClick = {
+                showTimePicker = false
+            }
+        )
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            initialDate = LocalDate.now(),
+            onDismiss = { showDatePicker = false },
+            onConfirm = { date ->
+                addAlarmViewModel.processCommand(AddAlarmCommand.SelectDate(date))
+                showDatePicker = false
+            },
+            onCancelClick = {
+                showDatePicker = false
+            }
+        )
+    }
+
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        when (currentState) {
+            AddAlarmState.Initial -> {
+            }
+
+            is AddAlarmState.Content -> {
+                AlarmTime(
+                    selectedTime = currentState.selectedTime,
+                    onTimeClick = {
+                        showTimePicker = true
+                    }
+                )
+                CycleTable(
+                    cycles = currentState.cyclesList,
+                    addAlarmViewModel = addAlarmViewModel
+                )
+                WeekDaysRow(
+                    viewModel = addAlarmViewModel
+                )
+                AlarmDate(
+                    selectedDate = currentState.selectedDate,
+                    onApplyDateClick = {
+                        showDatePicker = true
+                    }
+                )
+                BottomSheetCancelAndSave(
+                    onSaveClick = {
+                        addAlarmViewModel.processCommand(
+                            EditAlarm(
+                                AlarmItem(
+                                    id = alarmItem.id,
+                                    ringDay = formatDateWithRelative(currentState.selectedDate),
+                                    ringHours = currentState.selectedTime.hour.toString()
+                                        .padStart(2, '0')
+                                            + ":" + currentState.selectedTime.minute.toString()
+                                        .padStart(2, '0'),
+                                    timeToBed = if (selectedCycleId.value != -1) currentState.cyclesList.first().time else "",
+                                    checked = true,
+                                    repeatDays = ""
+                                )
+                            )
+                        )
+                    },
+                    onCancelClick = onCancelClick
+                )
+            }
+
+            AddAlarmState.Loading -> {}
         }
     }
 }

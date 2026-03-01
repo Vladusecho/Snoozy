@@ -10,9 +10,12 @@ import com.wem.snoozy.domain.entity.CycleItem
 import com.wem.snoozy.domain.entity.DayItem
 import com.wem.snoozy.domain.entity.DaysName
 import com.wem.snoozy.domain.usecase.AddNewAlarmUseCase
+import com.wem.snoozy.domain.usecase.EditAlarmUseCase
+import com.wem.snoozy.presentation.utils.formatStringToDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,11 +31,30 @@ class AddAlarmViewModel(
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
+    // TODO: ДОБАВИТЬ СЕРИАЛИЗАЦИЮ ДНЕЙ ПРОЗВОНА БУДИЛЬНИКА ЧЕРЕЗ JSON
+
+    // TODO: РАЗДЕЛИТЬ view model до EDIT VEIW MODEL
+
     private val repository = AlarmRepositoryImpl()
     private val addNewAlarmUseCase = AddNewAlarmUseCase(repository)
+    private val editAlarmUseCase = EditAlarmUseCase(repository)
+
+    private val preferences = combine(
+        userPreferencesManager.cycleLengthFlow,
+        userPreferencesManager.sleepStartTimeFlow
+    ) { cycleLength, sleepStartTime ->
+        Preferences(
+            cycleLength = cycleLength ?: "90",
+            sleepStartTime = sleepStartTime ?: "0"
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = Preferences("90", "0")
+    )
 
     // Add alarm screen state
-    private val _state = MutableStateFlow<AddAlarmState>(AddAlarmState.Initial)
+    private val _state = MutableStateFlow<AddAlarmState>(AddAlarmState.Loading)
     val state = _state.asStateFlow()
 
     private val _cyclesList = MutableStateFlow<List<CycleItem>>(emptyList())
@@ -49,17 +71,65 @@ class AddAlarmViewModel(
     private val _daysList = MutableStateFlow(initDaysList)
     val daysList = _daysList.asStateFlow()
 
+    val selectedCycleId = MutableStateFlow(-1)
 
-    val cycleLength = userPreferencesManager.cycleLengthFlow.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = "90"
-    )
-    val sleepStartTime = userPreferencesManager.sleepStartTimeFlow.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = "0"
-    )
+    init {
+        viewModelScope.launch {
+            preferences.collect { prefs ->
+                val currentState = _state.value
+                if (currentState is AddAlarmState.Content) {
+                    applyCyclesList(currentState.selectedTime)
+                } else {
+                    initializeState()
+                }
+            }
+        }
+    }
+
+    private fun initializeState() {
+        val prefs = preferences.value
+        applyCyclesList(LocalTime.now())
+        _state.value = AddAlarmState.Content(
+            selectedTime = LocalTime.now(),
+            cyclesList = _cyclesList.value,
+            daysList = initDaysList,
+            selectedDate = LocalDate.now()
+        )
+    }
+
+    fun applyCyclesList(selectedTime: LocalTime) {
+        val prefs = preferences.value
+        var currentTime = selectedTime
+        val newItems = mutableListOf<CycleItem>()
+
+        for (i in 1..7) {
+            val minusMinutes = currentTime
+                .minusMinutes(prefs.cycleLength.toLong())
+                .minusMinutes(prefs.sleepStartTime.toLong())
+
+            val hours = minusMinutes.hour.toString()
+            val minutes = minusMinutes.minute.toString().padStart(2, '0')
+            val cycleItem = CycleItem(i, "$hours:$minutes", i.toString(), checked = false)
+            newItems.add(cycleItem)
+            currentTime = currentTime.minusMinutes(prefs.cycleLength.toLong())
+        }
+
+        if (_cyclesList.value.isNotEmpty() && newItems.toSet() == _cyclesList.value.map {
+                it.copy(checked = false)
+            }.toSet()) {
+            return
+        }
+
+        _cyclesList.value = newItems.sortedByDescending { it.id }.toMutableList()
+
+        _state.update { state ->
+            if (state is AddAlarmState.Content) {
+                state.copy(cyclesList = _cyclesList.value)
+            } else {
+                state
+            }
+        }
+    }
 
     fun processCommand(command: AddAlarmCommand) {
         when (command) {
@@ -84,6 +154,7 @@ class AddAlarmViewModel(
 
             is AddAlarmCommand.SelectTime -> {
                 _state.update { prevState ->
+                    Log.d("MainViewModel", (prevState is AddAlarmState.Content).toString())
                     applyCyclesList(command.time)
                     if (prevState is AddAlarmState.Content) {
                         prevState.copy(
@@ -120,23 +191,31 @@ class AddAlarmViewModel(
                     }
                 }
             }
+
+            is AddAlarmCommand.EditAlarm -> {
+                viewModelScope.launch {
+                    editAlarmUseCase(command.alarmItem)
+                }
+            }
+
+            is AddAlarmCommand.InitEditValues -> {
+                val alarmItem = command.alarmItem
+                val alarmTime = LocalTime.of(
+                    alarmItem.ringHours.split(":")[0].toInt(),
+                    alarmItem.ringHours.split(":")[1].toInt(),
+                )
+                applyCyclesList(alarmTime)
+                _state.update {
+                    AddAlarmState.Content(
+                        alarmTime,
+                        alarmItem.ringDay.formatStringToDate(),
+                        listOf(),
+                        _cyclesList.value
+                    )
+                }
+            }
         }
     }
-
-
-    init {
-        applyCyclesList(LocalTime.now())
-        _state.value = AddAlarmState.Content(
-            selectedTime = LocalTime.now(),
-            cyclesList = _cyclesList.value,
-            daysList = initDaysList,
-            selectedDate = LocalDate.now()
-        ).also {
-            Log.d("AddAlarmViewModel", applyCyclesList(LocalTime.now()).toString())
-        }
-    }
-
-    val selectedCycleId = MutableStateFlow(-1)
 
     fun toggleDay(id: Int) {
         val currentList = _daysList.value.toMutableList()
@@ -163,40 +242,23 @@ class AddAlarmViewModel(
                 .thenByDescending { it.id }
         ).toMutableList()
     }
-
-    fun applyCyclesList(selectedTime: LocalTime) {
-
-        var selectedTime = selectedTime
-
-        val newItems = mutableListOf<CycleItem>()
-
-        for (i in 1..7) {
-            val minusMinutes = selectedTime
-                .minusMinutes(cycleLength.value!!.toLong())
-                .minusMinutes(sleepStartTime.value!!.toLong())
-            val hours = minusMinutes.hour.toString()
-            val minutes = minusMinutes.minute.toString().padStart(2, '0')
-            val cycleItem = CycleItem(i, "$hours:$minutes", i.toString(), checked = false)
-            newItems.add(cycleItem)
-            selectedTime = selectedTime.minusMinutes(cycleLength.value!!.toLong())
-        }
-
-        if (_cyclesList.value.isNotEmpty() && (newItems.toSet() == _cyclesList.value.map {
-                it.copy(
-                    checked = false
-                )
-            }
-                .toSet())) {
-            return
-        }
-
-        _cyclesList.value = newItems.sortedByDescending { it.id }.toMutableList()
-
-    }
 }
+
+data class Preferences(
+    val cycleLength: String,
+    val sleepStartTime: String
+)
 
 
 sealed interface AddAlarmCommand {
+
+    data class InitEditValues(
+        val alarmItem: AlarmItem
+    ) : AddAlarmCommand
+
+    data class EditAlarm(
+        val alarmItem: AlarmItem
+    ) : AddAlarmCommand
 
     data class SaveAlarm(
         val alarmItem: AlarmItem
@@ -229,6 +291,8 @@ sealed interface AddAlarmState {
         val daysList: List<DayItem>,
         val cyclesList: List<CycleItem>
     ) : AddAlarmState
+
+    data object Loading : AddAlarmState
 }
 
 

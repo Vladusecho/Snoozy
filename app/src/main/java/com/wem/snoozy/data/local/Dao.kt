@@ -2,13 +2,14 @@ package com.wem.snoozy.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface Dao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addAlarm(alarmItemModel: AlarmItemModel)
 
     @Query("SELECT * FROM alarms ORDER BY ringHoursMillis ASC")

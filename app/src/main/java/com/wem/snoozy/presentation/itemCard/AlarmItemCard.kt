@@ -5,6 +5,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,7 +47,8 @@ val myTypeFamily = FontFamily(
 fun AlarmItemCard(
     modifier: Modifier = Modifier,
     alarmItem: AlarmItem,
-    onToggle: () -> Unit = {}
+    onToggle: () -> Unit = {},
+    onEditClick: (AlarmItem) -> Unit = {}
 ) {
 
     val checked = alarmItem.checked
@@ -69,6 +71,9 @@ fun AlarmItemCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .clickable {
+                onEditClick(alarmItem)
+            }
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .then(
                 if (checked) {

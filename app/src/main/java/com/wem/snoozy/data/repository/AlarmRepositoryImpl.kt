@@ -14,13 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class AlarmRepositoryImpl : AlarmRepository {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun addNewAlarm(alarmItem: AlarmItem) {
         AlarmDatabase.getInstance(SnoozyApp.getContext()).dao().addAlarm(alarmItem.toAlarmItemModel())
     }
 
-    override suspend fun editAlarm(alarmId: Int) {
-        TODO("Not yet implemented")
+    override suspend fun editAlarm(alarmItem: AlarmItem) {
+        AlarmDatabase.getInstance(SnoozyApp.getContext()).dao().addAlarm(alarmItem.toAlarmItemModel())
     }
 
     override fun getAllAlarms(): Flow<List<AlarmItem>> {
