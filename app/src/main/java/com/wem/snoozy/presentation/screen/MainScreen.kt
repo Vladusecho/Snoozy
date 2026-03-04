@@ -1,6 +1,10 @@
 package com.wem.snoozy.presentation.screen
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,10 +44,12 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,14 +78,19 @@ import com.wem.snoozy.presentation.utils.SwipeToDeleteAlarmItem
 import com.wem.snoozy.presentation.utils.TimePickerDialog
 import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import com.wem.snoozy.presentation.viewModel.AddAlarmCommand
-import com.wem.snoozy.presentation.viewModel.AddAlarmCommand.EditAlarm
 import com.wem.snoozy.presentation.viewModel.AddAlarmCommand.SaveAlarm
 import com.wem.snoozy.presentation.viewModel.AddAlarmState
 import com.wem.snoozy.presentation.viewModel.AddAlarmViewModel
 import com.wem.snoozy.presentation.viewModel.AddAlarmViewModelFactory
+import com.wem.snoozy.presentation.viewModel.EditAlarmCommand
+import com.wem.snoozy.presentation.viewModel.EditAlarmCommand.*
+import com.wem.snoozy.presentation.viewModel.EditAlarmState
+import com.wem.snoozy.presentation.viewModel.EditAlarmViewModel
+import com.wem.snoozy.presentation.viewModel.EditAlarmViewModelFactory
 import com.wem.snoozy.presentation.viewModel.MainCommand
 import com.wem.snoozy.presentation.viewModel.MainState
 import com.wem.snoozy.presentation.viewModel.MainViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -90,8 +101,11 @@ fun MainScreen(
 ) {
 
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+        skipPartiallyExpanded = true,
     )
+
+    val scope = rememberCoroutineScope()
+
     var showBottomSheetAdd by remember { mutableStateOf(false) }
     var showBottomSheetEdit by remember { mutableStateOf(false) }
 
@@ -146,7 +160,11 @@ fun MainScreen(
         if (showBottomSheetAdd) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheetAdd = false
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showBottomSheetAdd = false
+                    }
                 },
                 sheetState = sheetState,
                 dragHandle = {
@@ -157,14 +175,22 @@ fun MainScreen(
                 scrimColor = Color.Black.copy(.85f),
             ) {
                 BottomSheetContentAdd {
-                    showBottomSheetAdd = false
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showBottomSheetAdd = false
+                    }
                 }
             }
         }
         if (showBottomSheetEdit) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheetEdit = false
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showBottomSheetEdit = false
+                    }
                 },
                 sheetState = sheetState,
                 dragHandle = {
@@ -177,7 +203,11 @@ fun MainScreen(
                 BottomSheetContentEdit(
                     editAlarm.value
                 ) {
-                    showBottomSheetEdit = false
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showBottomSheetEdit = false
+                    }
                 }
             }
         }
@@ -366,7 +396,7 @@ fun BottomSheetContentAdd(
                 )
                 WeekDaysRow(
                     modifier = Modifier.padding(vertical = 24.dp),
-                    viewModel = addAlarmViewModel
+                    addViewModel = addAlarmViewModel
                 )
                 AlarmDate(
                     selectedDate = currentState.selectedDate,
@@ -415,34 +445,32 @@ fun BottomSheetContentEdit(
     val viewModelStore = remember { ViewModelStore() }
 
     val factory = remember(Unit) {
-        AddAlarmViewModelFactory(
+        EditAlarmViewModelFactory(
+            alarmItem,
             UserPreferencesManager(context)
         )
     }
 
-    val addAlarmViewModel: AddAlarmViewModel = remember(viewModelStore) {
-        ViewModelProvider(viewModelStore, factory)[AddAlarmViewModel::class.java]
+    val editAlarmViewModel: EditAlarmViewModel = remember(viewModelStore) {
+        ViewModelProvider(viewModelStore, factory)[EditAlarmViewModel::class.java]
     }
 
 
     DisposableEffect(Unit) {
         onDispose {
             viewModelStore.clear()
-            Log.d("MainViewModel", "finished")
+            Log.d("EditAlarmViewModel", "finished")
         }
     }
 
-    LaunchedEffect(Unit) {
-        addAlarmViewModel.processCommand(AddAlarmCommand.InitEditValues(alarmItem))
-    }
 
     var showTimePicker by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val selectedCycleId = addAlarmViewModel.selectedCycleId.collectAsState()
+    val selectedCycleId = editAlarmViewModel.editSelectedCycleId.collectAsState()
 
-    val state = addAlarmViewModel.state.collectAsState()
+    val state: State<EditAlarmState> = editAlarmViewModel.editState.collectAsState()
     val currentState = state.value
 
 
@@ -452,7 +480,7 @@ fun BottomSheetContentEdit(
                 showTimePicker = false
             },
             onConfirm = { time ->
-                addAlarmViewModel.processCommand(AddAlarmCommand.SelectTime(time))
+                editAlarmViewModel.processCommand(SelectTime(time))
                 showTimePicker = false
             },
             onCancelClick = {
@@ -466,7 +494,7 @@ fun BottomSheetContentEdit(
             initialDate = LocalDate.now(),
             onDismiss = { showDatePicker = false },
             onConfirm = { date ->
-                addAlarmViewModel.processCommand(AddAlarmCommand.SelectDate(date))
+                editAlarmViewModel.processCommand(SelectDate(date))
                 showDatePicker = false
             },
             onCancelClick = {
@@ -483,10 +511,10 @@ fun BottomSheetContentEdit(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (currentState) {
-            AddAlarmState.Initial -> {
+            EditAlarmState.Initial -> {
             }
 
-            is AddAlarmState.Content -> {
+            is EditAlarmState.Content -> {
                 AlarmTime(
                     modifier = Modifier.padding(vertical = 24.dp),
                     selectedTime = currentState.selectedTime,
@@ -496,11 +524,11 @@ fun BottomSheetContentEdit(
                 )
                 CycleTable(
                     cycles = currentState.cyclesList,
-                    addAlarmViewModel = addAlarmViewModel
+                    editAlarmViewModel = editAlarmViewModel
                 )
                 WeekDaysRow(
                     modifier = Modifier.padding(vertical = 24.dp),
-                    viewModel = addAlarmViewModel
+                    editViewModel = editAlarmViewModel
                 )
                 AlarmDate(
                     selectedDate = currentState.selectedDate,
@@ -510,7 +538,7 @@ fun BottomSheetContentEdit(
                 )
                 BottomSheetCancelAndSave(
                     onSaveClick = {
-                        addAlarmViewModel.processCommand(
+                        editAlarmViewModel.processCommand(
                             EditAlarm(
                                 AlarmItem(
                                     id = alarmItem.id,
@@ -530,6 +558,8 @@ fun BottomSheetContentEdit(
                 )
             }
 
+            EditAlarmState.Loading -> {}
+            AddAlarmState.Initial -> {}
             AddAlarmState.Loading -> {}
         }
     }
@@ -555,7 +585,7 @@ fun BottomSheetCancelAndSave(
         ) {
             Text(
                 stringResource(R.string.cancel),
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 fontFamily = myTypeFamily,
                 fontWeight = FontWeight(900),
                     color = Color.White
@@ -575,8 +605,8 @@ fun BottomSheetCancelAndSave(
             modifier = Modifier.weight(2f)
         ) {
             Text(
-                "Добавить",
-                fontSize = 20.sp,
+                "Сохранить",
+                fontSize = 16.sp,
                 fontFamily = myTypeFamily,
                 fontWeight = FontWeight(900),
                 color = Color.Black
@@ -593,11 +623,11 @@ fun AlarmDate(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(bottom = 32.dp),
+        modifier = modifier.padding(bottom = 32.dp),
     ) {
         Text(
             text = "Будильник сработает:",
-            fontSize = 20.sp,
+            fontSize = 16.sp,
             fontFamily = myTypeFamily,
             fontWeight = FontWeight(900),
             color = MaterialTheme.colorScheme.tertiary
@@ -697,11 +727,11 @@ fun TimeCard(
 @Composable
 fun WeekDaysRow(
     modifier: Modifier = Modifier,
-    viewModel: AddAlarmViewModel
+    addViewModel: AddAlarmViewModel? = null,
+    editViewModel: EditAlarmViewModel? = null
 ) {
 
-    val daysState = viewModel.daysList.collectAsState()
-
+    val currentState = addViewModel?.daysList?.collectAsState() ?: editViewModel!!.editDaysList.collectAsState()
 
     LazyRow(
         modifier = modifier
@@ -709,7 +739,7 @@ fun WeekDaysRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         items(
-            items = daysState.value,
+            items = currentState.value,
             key = { it.id.toString() + it.name }
         ) {
             Box(
@@ -723,7 +753,9 @@ fun WeekDaysRow(
                     .background(if (it.checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
                     .padding(3.dp)
                     .clickable {
-                        viewModel.toggleDay(it.id)
+                        if (editViewModel != null) {
+                            editViewModel.processCommand(SelectDay(it.id))
+                        } else addViewModel?.processCommand(AddAlarmCommand.SelectDay(it.id))
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -743,7 +775,8 @@ fun WeekDaysRow(
 fun CycleTable(
     modifier: Modifier = Modifier,
     cycles: List<CycleItem>,
-    addAlarmViewModel: AddAlarmViewModel
+    addAlarmViewModel: AddAlarmViewModel? = null,
+    editAlarmViewModel: EditAlarmViewModel? = null
 ) {
 
     val listState = rememberLazyListState()
@@ -773,7 +806,9 @@ fun CycleTable(
                     modifier = Modifier.animateItem()
                 ) {
                     CycleItemCard(it) {
-                        addAlarmViewModel.processCommand(AddAlarmCommand.SelectCycle(it.id))
+                        if (editAlarmViewModel != null) {
+                            editAlarmViewModel.processCommand(SelectCycle(it.id))
+                        } else addAlarmViewModel?.processCommand(AddAlarmCommand.SelectCycle(it.id))
                     }
                 }
             }

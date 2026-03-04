@@ -19,9 +19,11 @@ import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -93,10 +95,10 @@ fun BottomBarTabs(
         modifier = Modifier
             .shadow(2.dp, RoundedCornerShape(30))
             .clip(RoundedCornerShape(30))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.onSurface)
             .fillMaxSize(),
     ) {
-        for (tab in tabs) {
+        tabs.forEachIndexed { index, tab ->
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -104,7 +106,7 @@ fun BottomBarTabs(
                     .clip(RoundedCornerShape(26))
                     .weight(1f)
                     // if current route == tab route -> checked background
-                    .background(if (currentRoute == tab.screen.route) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                    .background(if (currentRoute == tab.screen.route) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface)
                     .clickable {
                         navController.navigate(tab.screen.route) {
                             // only one copy of screen we can use
