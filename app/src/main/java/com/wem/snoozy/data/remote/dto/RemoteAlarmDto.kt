@@ -14,7 +14,7 @@ data class RemoteAlarmDto(
     @SerializedName("enabled")
     val enabled: Boolean,
     @SerializedName("repeatPattern")
-    val repeatPattern: String,
+    val repeatPattern: String?,
     @SerializedName("difficultyLevel")
     val difficultyLevel: Int,
     @SerializedName("isOverslept")

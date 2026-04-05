@@ -115,9 +115,9 @@ fun mapRepeatIdsToPattern(repeatDays: String): String {
     return ids.mapNotNull { idToPatternMap[it] }.joinToString(",")
 }
 
-fun mapPatternToIds(pattern: String): String {
+fun mapPatternToIds(pattern: String?): String {
+    if (pattern == null || pattern == "ONCE") return ""
     if (pattern == "DAILY") return "1,2,3,4,5,6,7"
-    if (pattern == "ONCE") return ""
     
     val patternToIdMap = mapOf(
         "MON" to "1", "TUE" to "2", "WED" to "3", "THU" to "4", "FRI" to "5", "SAT" to "6", "SUN" to "7"
