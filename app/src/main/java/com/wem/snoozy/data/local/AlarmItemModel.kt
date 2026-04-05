@@ -12,5 +12,6 @@ data class AlarmItemModel(
     val timeToBed: String,
     val checked: Boolean,
     val repeatDays: String,
-    val isOverslept: Boolean = false
+    val isOverslept: Boolean = false,
+    val remoteId: Long? = null
 )

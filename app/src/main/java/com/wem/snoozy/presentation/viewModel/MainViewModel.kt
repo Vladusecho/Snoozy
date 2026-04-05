@@ -2,6 +2,7 @@ package com.wem.snoozy.presentation.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wem.snoozy.data.repository.AlarmRepositoryImpl
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.entity.GroupItem
 import com.wem.snoozy.domain.repository.AlarmRepository
@@ -20,12 +21,19 @@ class MainViewModel @Inject constructor(
     private val getAllAlarmsUseCase: GetAllAlarmsUseCase,
     private val toggleAlarmStateUseCase: ToggleAlarmStateUseCase,
     private val deleteAlarmUseCase: DeleteAlarmUseCase,
-    private val alarmRepository: AlarmRepository // Используем репозиторий для групп
+    private val alarmRepository: AlarmRepository 
 ) : ViewModel() {
     private val _state = MutableStateFlow<MainState>(MainState.Initial)
     val state = _state.asStateFlow()
 
     init {
+        // Запускаем синхронизацию с сервером при старте
+        viewModelScope.launch {
+            if (alarmRepository is AlarmRepositoryImpl) {
+                alarmRepository.syncWithRemote()
+            }
+        }
+
         viewModelScope.launch {
             _state.value = MainState.Loading
             combine(

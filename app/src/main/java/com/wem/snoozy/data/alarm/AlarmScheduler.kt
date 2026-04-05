@@ -10,6 +10,7 @@ import com.wem.snoozy.data.receiver.AlarmReceiver
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.presentation.activity.MainActivity
 import com.wem.snoozy.presentation.utils.formatStringToDate
+import com.wem.snoozy.presentation.utils.formatDateWithRelative
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -22,18 +23,19 @@ class AlarmScheduler @Inject constructor(
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun schedule(alarmItem: AlarmItem) {
+    fun schedule(alarmItem: AlarmItem): AlarmItem {
         if (!alarmItem.checked) {
             cancelAlarm(alarmItem.id)
             cancelBedtimeNotification(alarmItem.id)
-            return
+            return alarmItem
         }
 
-        scheduleAlarm(alarmItem)
-        scheduleBedtimeNotification(alarmItem)
+        val updatedAlarm = scheduleAlarm(alarmItem)
+        scheduleBedtimeNotification(updatedAlarm)
+        return updatedAlarm
     }
 
-    private fun scheduleAlarm(alarmItem: AlarmItem) {
+    private fun scheduleAlarm(alarmItem: AlarmItem): AlarmItem {
         try {
             val alarmTime = LocalTime.parse(alarmItem.ringHours, DateTimeFormatter.ofPattern("HH:mm"))
             val ringDate = alarmItem.ringDay.formatStringToDate()
@@ -41,13 +43,31 @@ class AlarmScheduler @Inject constructor(
             var scheduleTime = LocalDateTime.of(ringDate, alarmTime)
             val now = LocalDateTime.now()
 
+            var finalAlarmItem = alarmItem
+
             if (scheduleTime.isBefore(now)) {
                 if (alarmItem.repeatDays.isEmpty()) {
+                    // Если дата сегодня, переносим на завтра
                     if (ringDate == LocalDate.now()) {
                         scheduleTime = scheduleTime.plusDays(1)
+                        finalAlarmItem = alarmItem.copy(
+                            ringDay = formatDateWithRelative(scheduleTime.toLocalDate())
+                        )
                     }
                 } else {
                     scheduleTime = getNextOccurrence(scheduleTime, alarmItem.repeatDays)
+                    finalAlarmItem = alarmItem.copy(
+                        ringDay = formatDateWithRelative(scheduleTime.toLocalDate())
+                    )
+                }
+            } else if (alarmItem.repeatDays.isNotEmpty()) {
+                // Проверяем, совпадает ли сегодняшний день с днем повтора
+                val currentDayOfWeek = scheduleTime.dayOfWeek.value.toString()
+                if (!alarmItem.repeatDays.split(",").contains(currentDayOfWeek)) {
+                    scheduleTime = getNextOccurrence(scheduleTime, alarmItem.repeatDays)
+                    finalAlarmItem = alarmItem.copy(
+                        ringDay = formatDateWithRelative(scheduleTime.toLocalDate())
+                    )
                 }
             }
 
@@ -75,14 +95,16 @@ class AlarmScheduler @Inject constructor(
             alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
             
             Log.d("AlarmScheduler", "Scheduled AlarmClock for ${alarmItem.id} at $scheduleTime")
+            return finalAlarmItem
         } catch (e: Exception) {
             Log.e("AlarmScheduler", "Error scheduling alarm", e)
+            return alarmItem
         }
     }
 
     fun scheduleBedtimeNotification(alarmItem: AlarmItem) {
         if (alarmItem.timeToBed.isEmpty() || !alarmItem.checked) {
-            cancelBedtimeNotification(alarmItem.id)
+            cancelBedtimeNotification(alarmId = alarmItem.id)
             return
         }
 

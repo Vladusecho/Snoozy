@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wem.snoozy.data.local.UserPreferencesManager
+import com.wem.snoozy.data.mapper.mapPatternToIds
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.entity.CycleItem
 import com.wem.snoozy.domain.entity.DayItem
@@ -64,8 +65,14 @@ class EditAlarmViewModel @AssistedInject constructor(
             
             val alarmTime = LocalTime.parse(alarmItem.ringHours)
             
-            // Парсим дни повтора
-            val repeatedDaysIds = alarmItem.repeatDays.split(",")
+            // Парсим дни повтора, учитывая "DAILY"
+            val effectiveRepeatDays = if (alarmItem.repeatDays == "DAILY") {
+                "1,2,3,4,5,6,7"
+            } else {
+                alarmItem.repeatDays
+            }
+
+            val repeatedDaysIds = effectiveRepeatDays.split(",")
                 .filter { it.isNotEmpty() }
                 .map { it.toInt() }
             

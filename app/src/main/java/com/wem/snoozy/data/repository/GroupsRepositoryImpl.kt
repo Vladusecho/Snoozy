@@ -4,7 +4,6 @@ import android.util.Log
 import com.wem.snoozy.data.local.Dao
 import com.wem.snoozy.data.mapper.toGroupItem
 import com.wem.snoozy.data.mapper.toGroupItemModel
-import com.wem.snoozy.data.mapper.toGroupItems
 import com.wem.snoozy.data.remote.ApiService
 import com.wem.snoozy.data.remote.dto.CreateGroupRequest
 import com.wem.snoozy.domain.entity.GroupItem
@@ -19,7 +18,7 @@ class GroupsRepositoryImpl @Inject constructor(
 ) {
     fun getGroups(): Flow<List<GroupItem>> = flow {
         // Сначала отдаем локальные данные
-        val localGroups = dao.getGroupsOnce().toGroupItems()
+        val localGroups = dao.getGroupsOnce().map { it.toGroupItem() }
         emit(localGroups)
 
         try {

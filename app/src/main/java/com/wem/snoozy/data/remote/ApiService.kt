@@ -42,4 +42,24 @@ interface ApiService {
         @Path("id") id: Int,
         @Part file: MultipartBody.Part
     ): Response<AvatarResponse>
+
+    // Alarms
+    @GET("api/v1/alarms")
+    suspend fun getAlarms(): Response<List<RemoteAlarmDto>>
+
+    @POST("api/v1/alarms")
+    suspend fun createAlarm(
+        @Body request: CreateAlarmRequest
+    ): Response<RemoteAlarmDto>
+
+    @PATCH("api/v1/alarms/{alarmId}")
+    suspend fun updateAlarm(
+        @Path("alarmId") alarmId: Long,
+        @Body request: @JvmSuppressWildcards Map<String, Any>
+    ): Response<RemoteAlarmDto>
+
+    @DELETE("api/v1/alarms/{alarmId}")
+    suspend fun deleteAlarm(
+        @Path("alarmId") alarmId: Long
+    ): Response<Unit>
 }

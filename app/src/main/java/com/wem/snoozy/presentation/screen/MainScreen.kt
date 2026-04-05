@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.wem.snoozy.R
 import com.wem.snoozy.domain.entity.AlarmItem
 import com.wem.snoozy.domain.entity.CycleItem
@@ -403,6 +403,10 @@ fun BottomSheetContentAdd(
                 )
                 BottomSheetCancelAndSave(
                     onSaveClick = {
+                        val repeatDaysString = currentState.daysList.filter { it.checked }.let { checkedDays ->
+                            if (checkedDays.size == 7) "DAILY" else checkedDays.joinToString(",") { it.id.toString() }
+                        }
+
                         addAlarmViewModel.processCommand(
                             SaveAlarm(
                                 AlarmItem(
@@ -416,7 +420,7 @@ fun BottomSheetContentAdd(
                                         currentState.cyclesList.find { it.id == selectedCycleId.value }?.time ?: ""
                                     } else "",
                                     checked = true,
-                                    repeatDays = currentState.daysList.filter { it.checked }.joinToString(",") { it.id.toString() }
+                                    repeatDays = repeatDaysString
                                 )
                             )
                         )
@@ -519,6 +523,10 @@ fun BottomSheetContentEdit(
                 )
                 BottomSheetCancelAndSave(
                     onSaveClick = {
+                        val repeatDaysString = currentState.daysList.filter { it.checked }.let { checkedDays ->
+                            if (checkedDays.size == 7) "DAILY" else checkedDays.joinToString(",") { it.id.toString() }
+                        }
+
                         editAlarmViewModel.processCommand(
                             EditAlarm(
                                 AlarmItem(
@@ -532,7 +540,8 @@ fun BottomSheetContentEdit(
                                         currentState.cyclesList.find { it.id == selectedCycleId.value }?.time ?: ""
                                     } else "",
                                     checked = true,
-                                    repeatDays = currentState.daysList.filter { it.checked }.joinToString(",") { it.id.toString() }
+                                    repeatDays = repeatDaysString,
+                                    remoteId = alarmItem.remoteId
                                 )
                             )
                         )

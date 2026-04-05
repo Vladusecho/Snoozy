@@ -126,6 +126,12 @@ fun String.formatStringToDate(): LocalDate {
         "Сегодня" -> today
         "Завтра" -> today.plusDays(1)
         "Послезавтра" -> today.plusDays(2)
-        else -> LocalDate.parse(this, formatter)
+        else -> {
+            if (this.contains("-")) {
+                LocalDate.parse(this)
+            } else {
+                LocalDate.parse(this, formatter)
+            }
+        }
     }
 }
