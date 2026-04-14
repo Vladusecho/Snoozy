@@ -1,4 +1,4 @@
-# 💤 Sleep Cycle Calculator
+# 💤 Snoozy
 
 [![Status](https://img.shields.io/badge/status-in%20development-yellow)](https://github.com/yourusername/sleep-cycle-calculator)
 [![Kotlin](https://img.shields.io/badge/kotlin-blue.svg)](https://kotlinlang.org)
@@ -25,18 +25,11 @@
 - **Асинхронность:** Kotlin Coroutines + Flow
 - **Хранение:** DataStore Preferences / Room
 
-## 🛠️ Текущий прогресс
-
-### ✅ Реализовано
-- [x] Базовая структура проекта
-- [x] Навигация между экранами
-- [x] Главный экран с BottomSheet создания будильника
-- [x] Сохранение настроек в DataStore
-- [x] Темная/светлая тема
-- [x] Базовый алгоритм расчета циклов сна
-
 ## 📱 Скриншоты
 
+<img width="30%" alt="Login" src="https://github.com/user-attachments/assets/ba912a1f-b41a-4ee1-b2fe-34a5600567ca"/>
+<img width="30%" alt="Main" src="https://github.com/user-attachments/assets/1c6eb94e-6d73-438a-96a6-eab649130269"/>
+<img width="30%" alt="Alarm" src="https://github.com/user-attachments/assets/32944acf-10ec-4dba-844e-db25fe5c5051"/>
 
 
 ## 📞 Контакты
